@@ -103,10 +103,14 @@ def test_the_bet_is_not_pushed_off_a_phone_by_extra_columns():
 def test_the_record_leads_the_page_with_its_own_number():
     """It is the reason to trust or ignore everything under it, so it reads
     before the board rather than after."""
-    panel = render_board([_fade()], settled=[_settled(), _settled(), _settled("loss")])
-    assert "2-1" in panel
-    assert panel.index("2-1") < panel.index("Public is on"), "above the board"
-    assert "31-33" in panel, "the settled log carries the score"
+    # The whole page, because the settled log is now its own panel at the foot:
+    # the tally is the summary and belongs on top, the log is detail and belongs
+    # last, with the watch list in between where it can be acted on.
+    page = render_page([_fade()], settled=[_settled(), _settled(), _settled("loss")])
+    assert "2-1" in page
+    assert page.index("2-1") < page.index("Public is on"), "above the board"
+    assert "31-33" in page, "the settled log carries the score"
+    assert page.index("Public is on") < page.index("31-33"), "and the log below it"
 
 
 def test_a_push_is_logged_but_kept_out_of_the_win_rate():
@@ -119,10 +123,10 @@ def test_the_closing_count_flag_appears_only_once_the_record_is_mixed():
     """While every row shares a basis the strip above has already said so, and
     repeating it on each row is noise -- but the moment the two are mixed the
     distinction is the only way to read the number honestly."""
-    all_final = render_board([], settled=[_settled(), _settled()])
+    all_final = render_page([], settled=[_settled(), _settled()])
     assert "closing count" not in all_final
 
-    mixed = render_board([], settled=[_settled(), _settled(from_final_tally=False)])
+    mixed = render_page([], settled=[_settled(), _settled(from_final_tally=False)])
     assert "closing count" in mixed
 
 
@@ -212,7 +216,7 @@ def test_a_bet_decided_outside_the_lock_window_shows_how_far_out():
     is what separates a bet confirmed near kickoff from one inferred hours earlier."""
     stale = _settled(from_final_tally=False, lead=timedelta(hours=5, minutes=12),
                      confirmed=False)
-    panel = render_board([_fade()], settled=[stale])
+    panel = render_page([_fade()], settled=[stale])
 
     assert "5h12m before kickoff" in panel
     assert "1 of 1 were decided by a reading more than 2h before kickoff" in panel
@@ -221,8 +225,11 @@ def test_a_bet_decided_outside_the_lock_window_shows_how_far_out():
 def test_a_confirmed_bet_says_nothing_about_its_lead_time():
     """Only the exceptions are worth a sub-line; annotating every row would make the
     annotation invisible."""
-    panel = render_board([_fade()], settled=[_settled(from_final_tally=False)])
+    panel = render_page([_fade()], settled=[_settled(from_final_tally=False)])
 
+    # The whole page, or this would pass for the wrong reason: the settled log is no
+    # longer part of render_board, so a row annotation could not appear there anyway.
+    assert "31-33" in panel, "the log is really present to be checked"
     # "before kickoff" also occurs in the rule's own prose; the closing tag is what
     # makes this the per-row annotation rather than the explanation above it.
     assert "before kickoff</span>" not in panel
@@ -237,7 +244,7 @@ def test_a_closing_count_is_never_also_labelled_with_a_lead_time():
         _settled(from_final_tally=True, lead=timedelta(0)),
         _settled(from_final_tally=False, lead=timedelta(hours=6), confirmed=False),
     ]
-    panel = render_board([_fade()], settled=mixed)
+    panel = render_page([_fade()], settled=mixed)
 
     assert "closing count" in panel
     assert "0m before kickoff" not in panel
@@ -252,3 +259,36 @@ def test_the_staleness_rule_is_stated_from_the_constants_not_a_literal():
 
     assert "4 hours" not in panel
     assert "2h" in panel and "12h" in panel
+
+
+def test_the_watch_list_comes_before_the_settled_log():
+    """The ordering bug this structure exists to prevent.
+
+    The watch list first shipped after the board's panel, and that panel ended with
+    the settled log -- so on a real page the near misses sat below twenty-odd rows
+    of history and were invisible without scrolling past the whole record. What a
+    reader can still bet on has to come before what has already been graded.
+    """
+    page = render_page(
+        [_fade()], settled=[_settled(), _settled()], watch=[_fade(tickets=74)]
+    )
+
+    assert page.index("Watching") < page.index("Settled"), (
+        "the band is actionable and the log is history; actionable goes first"
+    )
+    assert page.index("Public is on") < page.index("Watching"), "board still leads"
+
+
+def test_the_three_panels_appear_in_order_and_only_when_they_have_content():
+    """Each section is its own panel so an empty one can vanish rather than leave a
+    heading over nothing."""
+    full = render_page([_fade()], settled=[_settled()], watch=[_fade(tickets=74)])
+    assert full.count('<div class="panel"') == 3
+
+    no_watch = render_page([_fade()], settled=[_settled()])
+    assert no_watch.count('<div class="panel"') == 2
+    assert "Watching" not in no_watch
+
+    board_only = render_page([_fade()])
+    assert board_only.count('<div class="panel"') == 1
+    assert "Settled" not in board_only

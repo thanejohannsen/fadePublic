@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import html
 from datetime import UTC, datetime
+from zoneinfo import ZoneInfo
 
 from .record import LOCK_LEAD, MAX_STALENESS, tally
 
@@ -270,11 +271,24 @@ def _settled_table(settled) -> str:
         )
 
     return (
-        f'<h3 class="logh">Settled</h3>'
         f'<div class="scroll"><table class="fade">'
         f"<tr><th>Game</th><th>Bet</th><th>Score</th></tr>"
         f'{"".join(rows)}</table></div>'
     )
+
+
+def _settled_panel(settled) -> str:
+    """The graded log, in its own panel at the foot of the page.
+
+    It used to close out the board's panel, which pushed everything after it --
+    the watch list included -- below twenty-odd rows of history. The tally at the
+    top of the board is the summary; this is the detail behind it, and detail
+    belongs last.
+    """
+    table = _settled_table(settled)
+    if not table:
+        return ""
+    return f'<div class="panel"><h2>Settled</h2>{table}</div>'
 
 
 def _watch_panel(watch, watch_threshold: int = 70, threshold: int = 80) -> str:
@@ -320,7 +334,6 @@ def render_board(
     """
     settled = list(settled or [])
     strip = _record_strip(settled, lock_lead, max_staleness)
-    log = _settled_table(settled)
 
     if not fades:
         return (
@@ -329,7 +342,7 @@ def render_board(
             f"the tickets on one side.</p>"
             f'<p class="note">The board fills as kickoff approaches, so this is '
             f"usually empty early in the week; anything close but short of "
-            f"{threshold}% shows under Watching below.</p>{log}</div>"
+            f"{threshold}% shows under Watching below.</p></div>"
         )
 
     return (
@@ -352,7 +365,7 @@ def render_board(
         f"opposite ways each matched an independent public board exactly, money "
         f"share included. Why the crowd sits on unders is unexplained, but the "
         f"labels are not the reason. Both sides are printed so the next check stays "
-        f"a glance.</p>{log}</div>"
+        f"a glance.</p></div>"
     )
 
 
@@ -374,7 +387,14 @@ def render_page(
     on its own source line -- the publish step diffs this file line by line to tell
     a real change from a moved timestamp.
     """
-    stamp = (generated_at or datetime.now(UTC)).strftime("%a %-d %b %H:%M UTC")
+    # Central, and on a 12-hour clock: this is read by one person in that zone,
+    # and "4:55 PM CDT" is the form they would write it in. %Z resolves to CDT or
+    # CST on its own, so the page stays right across the November switch.
+    stamp = (
+        (generated_at or datetime.now(UTC))
+        .astimezone(ZoneInfo("America/Chicago"))
+        .strftime("%a %-d %b %-I:%M %p %Z")
+    )
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -390,6 +410,7 @@ def render_page(
   <p class="stamp">Updated {stamp}</p>
   {render_board(fades, threshold=threshold, settled=settled, lock_lead=lock_lead, max_staleness=max_staleness)}
   {_watch_panel(watch or [], watch_threshold, threshold)}
+  {_settled_panel(list(settled or []))}
 </div>
 {_SCRIPT}
 </body>
