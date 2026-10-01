@@ -40,6 +40,12 @@ FADEABLE_MARKETS = ("spread", "total")
 
 DEFAULT_THRESHOLD = 80
 
+# The lower bound of the watch band: shown on the page, never graded. Lives here
+# beside the threshold it is paired with so the two cannot drift apart, even though
+# nothing in this module reads it -- the band is applied by partitioning find_fades'
+# output, not by a second rule.
+DEFAULT_WATCH_THRESHOLD = 70
+
 
 @dataclass(frozen=True)
 class Fade:

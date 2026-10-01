@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from .config import load_config
 from .db import open_db
@@ -24,13 +24,21 @@ def cmd_refresh(args: argparse.Namespace) -> int:
 
     with open_db(cfg.db) as conn:
         fades: list = []
+        watch: list = []
         games = fetch_splits()
         if games:
             store_splits(conn, games, now)
             store_results(conn, games)
-            fades = find_fades(
-                games, threshold=cfg.threshold, now=now, markets=cfg.markets
+            # One pass at the lower threshold, then split. Asking find_fades twice
+            # would run the rule twice; partitioning its output keeps a single
+            # definition of what qualifies and inherits its sort order for both
+            # tables. The watch band is the gap between the two thresholds, so a
+            # game cannot appear in both.
+            qualifying = find_fades(
+                games, threshold=cfg.watch_threshold, now=now, markets=cfg.markets
             )
+            fades = [f for f in qualifying if f.public.tickets >= cfg.threshold]
+            watch = [f for f in qualifying if f.public.tickets < cfg.threshold]
         else:
             # The feed is undocumented and not ours. An outage should empty the
             # board for one run, not take the record down with it.
@@ -40,18 +48,41 @@ def cmd_refresh(args: argparse.Namespace) -> int:
         # restores it from a cache that gets evicted, so without this a run on a
         # fresh checkout would grade an empty history.
         load_log(conn, cfg.fade_log)
-        settled = settle(conn, threshold=cfg.threshold, markets=cfg.markets)
+        # The record is graded at cfg.threshold, never at cfg.watch_threshold, so
+        # the watch band is structurally incapable of entering it.
+        settled = settle(
+            conn,
+            threshold=cfg.threshold,
+            markets=cfg.markets,
+            lock_lead=timedelta(hours=cfg.lock_lead_hours),
+            max_staleness=timedelta(hours=cfg.max_staleness_hours),
+        )
+        # No cap passed: the archive keeps every pre-kickoff reading it saw, even
+        # ones currently too stale to grade. See save_log's docstring.
         save_log(conn, cfg.fade_log)
 
     cfg.site.mkdir(parents=True, exist_ok=True)
     target = cfg.site / "index.html"
     target.write_text(
-        render_page(fades, cfg.threshold, settled, now), encoding="utf-8"
+        render_page(
+            fades,
+            cfg.threshold,
+            settled,
+            now,
+            watch=watch,
+            watch_threshold=cfg.watch_threshold,
+            lock_lead=timedelta(hours=cfg.lock_lead_hours),
+            max_staleness=timedelta(hours=cfg.max_staleness_hours),
+        ),
+        encoding="utf-8",
     )
 
+    r = tally(settled)
     print(f"Page written to {target}")
     print(f"Board: {len(fades)} qualifying at {cfg.threshold}% of tickets")
-    print(f"Record: {tally(settled).label} over {len(settled)} settled bets")
+    print(f"Watching: {len(watch)} between {cfg.watch_threshold}% and {cfg.threshold}%")
+    print(f"Record: {r.label} over {len(settled)} settled bets", end="")
+    print(f" ({r.outside_lock} outside the lock window)" if r.outside_lock else "")
     return 0
 
 
@@ -80,7 +111,15 @@ def cmd_backfill(args: argparse.Namespace) -> int:
             print(f"week {week}: {len(final)} completed games")
 
         load_log(conn, cfg.fade_log)
-        settled = settle(conn, threshold=cfg.threshold, markets=cfg.markets)
+        settled = settle(
+            conn,
+            threshold=cfg.threshold,
+            markets=cfg.markets,
+            lock_lead=timedelta(hours=cfg.lock_lead_hours),
+            max_staleness=timedelta(hours=cfg.max_staleness_hours),
+        )
+        # No cap passed: the archive keeps every pre-kickoff reading it saw, even
+        # ones currently too stale to grade. See save_log's docstring.
         save_log(conn, cfg.fade_log)
 
     print(f"Record: {tally(settled).label} over {len(settled)} settled bets")

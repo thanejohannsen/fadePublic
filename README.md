@@ -11,6 +11,11 @@ is printed beside the ticket share and left for the reader to interpret.
 ## The rule
 
 - **Spreads and totals only**, at 80% of tickets.
+- **A second band at 70% is displayed and never recorded.** The 80% cut is a
+  cliff — a game at 79% is not meaningfully different evidence from one at 81% —
+  but moving the cut would change what the record measures, and widening it would
+  re-grade every past week. So the near misses sit in their own section under
+  *Watching*, and the record is computed at 80 and never sees them.
 - **Moneylines are excluded.** They reach any threshold almost automatically,
   because everyone takes the big favourite for a small payout, so the threshold
   stops discriminating. Over three weeks the rule fired on 35 moneylines at a
@@ -37,9 +42,24 @@ lopsided in its own gameday snapshot, so it never enters the record. A reading
 taken after kickoff is never used — by then the tickets include people betting
 the live game.
 
-Past **four hours** from kickoff a reading is not evidence about gameday at all,
-and the bet is dropped rather than graded on a guess. A smaller honest record
-beats a larger invented one.
+Two bounds rather than one. Inside **two hours** of kickoff the public had
+committed and the reading is what the rule aims for, so the bet is **confirmed**.
+Between two and **twelve** hours it is still graded, but the row prints how far
+out the deciding reading actually was, and the tally says how many came in that
+way. Past twelve hours the reading predates gameday and the bet is dropped rather
+than graded on a guess.
+
+The earlier rule had a single four-hour bound and dropped everything past it,
+which hid the distinction it was making: a bet decided forty minutes out and one
+decided three hours out counted the same, while a bet decided four hours and one
+minute out counted not at all — and since the scheduler is the thing that decides
+which of those you get, the size of the record was mostly a fact about GitHub.
+Annotating instead of dropping puts the evidence quality on the page per row, and
+means a gap in the schedule costs precision rather than the bet.
+
+The archive in `records/` is **not** bounded this way: it keeps every pre-kickoff
+reading it saw, whatever its age. Deciding what to grade is a judgement that can
+be revised later; deciding what to keep cannot.
 
 ### Why `records/` is committed and `data/` is not
 
@@ -107,7 +127,7 @@ fade backfill --weeks 1,2,3       # seed the record from completed weeks
 ```
 
 ```bash
-.venv/bin/python -m pytest        # 44 tests, no network required
+.venv/bin/python -m pytest        # no network required
 ```
 
 Tests run against captured real API responses in `fixtures/`, so they fail if
@@ -118,13 +138,19 @@ as reported independently of this code.
 
 ## Refresh cadence
 
-The workflow asks every fifteen minutes. GitHub delivers about five runs a day —
-scheduled workflows are best-effort and dropped under load, not queued. Since a
-bet needs a reading within four hours of kickoff, sparse delivery drops bets
-rather than mis-grading them.
+The workflow asks in the windows before actual kickoffs rather than spreading its
+asks evenly over the week: 564 asks a week against the old flat `*/15`
+schedule's 672, with roughly three times the density in the hours that decide
+whether a bet is confirmed, plus a two-hourly heartbeat that puts every kickoff
+in the calendar within 1h59m of a scheduled ask.
 
-To get a real cadence, drive the `workflow_dispatch` trigger from an external
-cron; manual dispatches are not deprioritised the way schedules are. NFL
-kickoffs cluster tightly enough — Thursday ~20:15 ET, Sunday 13:00/16:05/16:25/
-20:20, Monday 20:15 — that firing every 30 minutes inside those windows covers
-every game in about 25 calls a week.
+That is a modest improvement, not a fix. GitHub drops scheduled runs under load,
+and this project's own two measurements — an hourly cron delivering 11 runs in 43
+hours, a `*/15` cron about 5 a day — suggest delivery is capped **per unit time
+rather than per ask**, so four times the asking bought the same throughput.
+
+To get a real cadence, drive `workflow_dispatch` from an external cron; manual
+dispatches are not deprioritised the way schedules are. Roughly 25 calls a week
+covers every game. **[CADENCE.md](CADENCE.md)** has the window table, the
+copy-paste `curl`, the token scope it needs, and the gaps that are accepted on
+purpose.

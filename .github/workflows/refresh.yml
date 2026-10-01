@@ -1,22 +1,63 @@
 name: Refresh board
 
-# Every fifteen minutes. GitHub will not oblige: scheduled workflows are
-# best-effort and are dropped under load rather than queued. Measured on the
-# repository this was split out of, a */15 schedule delivered about five runs a
-# day. Asking often does not make the scheduler punctual, it makes a missed slot
-# cost minutes instead of hours.
+# Aimed at the hours that decide whether a bet counts, not spread evenly over the
+# week. A bet is confirmed only if a reading was taken within the lock window of
+# kickoff (see record.py), and the old flat */15 schedule spent 96 asks a day to
+# put roughly five delivered runs anywhere in 24 hours -- so the reading nearest a
+# Sunday kickoff was usually hours old.
 #
-# What that costs here: a bet only enters the record if a reading was taken
-# within four hours of kickoff (see record.py), so sparse delivery drops bets
-# rather than mis-grading them. If that matters, drive `workflow_dispatch` from
-# an external cron instead -- manual dispatches are not deprioritised the way
-# schedules are.
+# GitHub will still not oblige: scheduled workflows are best-effort and are dropped
+# under load rather than queued. Two measurements on the repository this was split
+# out of suggest delivery is capped per unit *time* rather than per ask -- an hourly
+# cron delivered 11 runs in 43 hours, a */15 cron about 5 a day, which is the same
+# throughput for four times the asking. So concentrating the asks is a modest
+# improvement, not a fix. The fix is driving workflow_dispatch from an external
+# cron, which is not deprioritised the way schedules are: see CADENCE.md.
 #
-# GitHub also disables scheduled workflows after 60 days of repository
-# inactivity; the commit this job makes keeps it alive.
+# Cron here is UTC and GitHub does not honour CRON_TZ, so every window is the union
+# of its EDT (UTC-4) and EST (UTC-5) placements -- which is why they look an hour
+# wider than the kickoff needs.
+#
+# Dense windows cover the recurring slates: Thursday night, the whole Sunday card
+# from the 09:30 ET international kickoff to the 20:20 ET nightcap, Monday night,
+# and the late-season Saturday slate. Every one of those gets at least two hours of
+# 5-minute coverage before kickoff under both offsets.
+#
+# Holiday one-offs -- Thanksgiving's two daytime games, Black Friday, and Christmas
+# when it falls midweek -- are deliberately NOT given standing windows: that would
+# cost ~84 asks a week all season for three games a year. They fall through to the
+# heartbeat below, and because the rule now annotates a stale reading instead of
+# dropping the bet, missing them costs the "confirmed" label rather than the bet.
+# Cover them with a manual dispatch if you want them locked.
+#
+# The heartbeat is every two hours on purpose: at :17 of every even hour, no kickoff
+# anywhere in the calendar is more than 1h59m from a scheduled ask, which is inside
+# the two-hour lock window. Minute 17 is not in the dense minute list, so it never
+# double-fires. Everything avoids the top of the hour, where GitHub's load is worst.
+#
+# Note on keepalive: GitHub disables scheduled workflows after 60 days of repository
+# inactivity. The commit this job makes only happens when the board or the record
+# actually changed, so an off-season with an empty board makes no commits and the
+# schedule will eventually be disabled. Re-enable it, or dispatch once, before a
+# season starts.
 on:
   schedule:
-    - cron: "7,22,37,52 * * * *"
+    # Sunday: Saturday-night tail, then the full card.
+    - cron: "4,9,14,19,24,29,34,39,44,49,54,59 0-2,10-23 * * 0"
+    # Monday: Sunday-night tail, then the Monday-night window (21 covers a 19:15 ET
+    # kickoff under EDT).
+    - cron: "4,9,14,19,24,29,34,39,44,49,54,59 0-2,21-23 * * 1"
+    # Tuesday: Monday-night tail.
+    - cron: "4,9,14,19,24,29,34,39,44,49,54,59 0-2 * * 2"
+    # Thursday night.
+    - cron: "4,9,14,19,24,29,34,39,44,49,54,59 22-23 * * 4"
+    # Friday: Thursday-night tail.
+    - cron: "4,9,14,19,24,29,34,39,44,49,54,59 0-2 * * 5"
+    # Late-season Saturday slate (15, not 16: a 13:00 ET Saturday kickoff under EDT
+    # needs 15:00Z).
+    - cron: "4,9,14,19,24,29,34,39,44,49,54,59 15-23 * * 6"
+    # Off-window heartbeat.
+    - cron: "17 */2 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -68,7 +109,7 @@ jobs:
       #
       # docs/ is committed only when something other than the timestamp changed.
       # Every run rewrites the stamp, so committing unconditionally would produce
-      # a commit every fifteen minutes and bury real changes in noise. The stamp
+      # a commit per delivered run and bury real changes in noise. The stamp
       # is identified by class="stamp", which a test asserts appears exactly once
       # and only on that line.
       - name: Publish if changed

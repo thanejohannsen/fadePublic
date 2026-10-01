@@ -23,9 +23,22 @@ When there is no gameday reading
 --------------------------------
 The scheduled refresh is not reliable -- GitHub drops runs under load, and an
 hourly cron measured over two days fired eleven times in forty-three hours. So
-the snapshot nearest kickoff can be hours stale, and beyond ``MAX_STALENESS``
-it is not evidence about gameday at all. Those games are dropped rather than
-graded on a guess: a smaller honest record beats a larger invented one.
+the snapshot nearest kickoff can be hours stale, and the rule has to say what
+that costs.
+
+Two bounds rather than one. Inside ``LOCK_LEAD`` the public had committed and the
+reading is what the rule aims for, so the bet is **confirmed**. Between
+``LOCK_LEAD`` and ``MAX_STALENESS`` the bet is still graded, but it carries the
+lead time of the reading that decided it, and the page says how many of the
+record came in that way. Beyond ``MAX_STALENESS`` the reading predates gameday
+and is dropped rather than graded on a guess.
+
+The earlier rule had one bound and dropped everything past it, which hid the
+distinction it was actually making: a bet decided five hours out and a bet
+decided forty minutes out counted the same, and a bet decided five hours and one
+minute out counted not at all. Annotating instead of dropping keeps the evidence
+quality visible per row, and means a gap in the schedule costs precision rather
+than the bet.
 """
 
 from __future__ import annotations
@@ -41,11 +54,15 @@ from .fades import DEFAULT_THRESHOLD, FADEABLE_MARKETS, Fade, find_fades
 
 log = logging.getLogger(__name__)
 
-# The reading the rule aims for: an hour out, once the public has committed.
-LOCK_LEAD = timedelta(hours=1)
+# The reading the rule aims for: inside this of kickoff the public has committed,
+# and the bet is confirmed rather than inferred from a stale snapshot.
+LOCK_LEAD = timedelta(hours=2)
 
-# Nothing recorded within this of kickoff means no gameday evidence at all.
-MAX_STALENESS = timedelta(hours=4)
+# Past this a reading predates gameday and the bet is dropped. Generous next to
+# LOCK_LEAD on purpose -- the scheduler misses its window often enough that a cap
+# this tight would be the main thing deciding the record's size, which is a fact
+# about GitHub rather than about the rule.
+MAX_STALENESS = timedelta(hours=12)
 
 # Both sides of a fadeable market are laid at roughly -110, so a win returns
 # this and a loss costs 1. Used only for the units line on the page.
@@ -64,6 +81,11 @@ class Settled:
     result: str
     away_points: int
     home_points: int
+    # Was the deciding reading inside the lock window? Set by ``settle`` from the
+    # ``lock_lead`` it was called with, deliberately not derived from the module
+    # constant: the window is configurable, and a property reading LOCK_LEAD here
+    # would report against a different number than the one that did the grading.
+    confirmed: bool = True
 
     @property
     def game(self) -> str:
@@ -87,6 +109,10 @@ class Record:
     losses: int
     pushes: int
     from_final_tally: int
+    # How many were decided by a reading outside the lock window. Reported beside
+    # the tally rather than split out of it, the same way from_final_tally is: the
+    # figure to act on is the whole record, with its basis said plainly.
+    outside_lock: int = 0
 
     @property
     def decided(self) -> int:
@@ -131,10 +157,18 @@ def _grade(fade: Fade, away_points: int, home_points: int) -> str:
     return WIN if margin > 0 else LOSS
 
 
-def _deciding_snapshot(conn, away: str, home: str, kickoff: datetime):
+def _deciding_snapshot(
+    conn,
+    away: str,
+    home: str,
+    kickoff: datetime,
+    max_staleness: timedelta | None = MAX_STALENESS,
+):
     """The last reading taken at or before kickoff, if one is close enough.
 
-    Returns ``(fetched_at, is_final, rows)`` or ``None``.
+    ``max_staleness`` of ``None`` means no bound at all, which is what the archive
+    wants: deciding what to *grade* is a judgement that can be revised, deciding
+    what to *keep* cannot. Returns ``(fetched_at, is_final, rows)`` or ``None``.
     """
     row = conn.execute(
         """SELECT fetched_at, MAX(is_final) FROM betting_splits
@@ -149,7 +183,7 @@ def _deciding_snapshot(conn, away: str, home: str, kickoff: datetime):
     observed = datetime.fromisoformat(row[0])
     if observed.tzinfo is None:
         observed = observed.replace(tzinfo=UTC)
-    if kickoff - observed > MAX_STALENESS:
+    if max_staleness is not None and kickoff - observed > max_staleness:
         log.debug(
             "%s @ %s: nearest reading %s before kickoff, not graded",
             away, home, kickoff - observed,
@@ -169,6 +203,8 @@ def settle(
     conn,
     threshold: int = DEFAULT_THRESHOLD,
     markets: tuple[str, ...] = FADEABLE_MARKETS,
+    lock_lead: timedelta = LOCK_LEAD,
+    max_staleness: timedelta = MAX_STALENESS,
 ) -> list[Settled]:
     """Every bet the rule would have made on a finished game, graded.
 
@@ -187,7 +223,7 @@ def settle(
         if kickoff.tzinfo is None:
             kickoff = kickoff.replace(tzinfo=UTC)
 
-        snapshot = _deciding_snapshot(conn, away, home, kickoff)
+        snapshot = _deciding_snapshot(conn, away, home, kickoff, max_staleness)
         if snapshot is None:
             continue
         observed, is_final, rows = snapshot
@@ -220,6 +256,7 @@ def settle(
                     result=_grade(fade, away_points, home_points),
                     away_points=away_points,
                     home_points=home_points,
+                    confirmed=kickoff - observed <= lock_lead,
                 )
             )
 
@@ -233,6 +270,7 @@ def tally(settled: list[Settled]) -> Record:
         losses=sum(s.result == LOSS for s in settled),
         pushes=sum(s.result == PUSH for s in settled),
         from_final_tally=sum(s.from_final_tally for s in settled),
+        outside_lock=sum(not s.confirmed for s in settled),
     )
 
 
@@ -252,6 +290,13 @@ def tally(settled: list[Settled]) -> Record:
 # Snapshots are archived, not verdicts. Which reading decides depends only on
 # time, never on the threshold, so freezing it keeps the record re-gradeable:
 # raise the threshold and every past week re-grades from the archive alone.
+#
+# That invariant now has one qualifier worth stating. The *staleness cap* is
+# configurable, so which reading decides depends on time and on config -- which is
+# exactly why this function applies no cap at all. The archive holds the last
+# pre-kickoff reading for every game regardless of age, so lowering the cap narrows
+# what gets graded without destroying what could be graded if it were raised again.
+# Keep it that way: a bound here would turn a change of mind into data loss.
 
 LOG_VERSION = 1
 
@@ -266,6 +311,15 @@ def save_log(conn, path) -> int:
     Written as soon as kickoff passes rather than when the score lands: waiting
     for the final leaves a window in which a cache eviction would destroy a real
     pre-kickoff reading for good. The score is filled in on a later run.
+
+    Deliberately **unbounded**, and deliberately not given the grading cap. This
+    function rewrites the file wholesale, so a cap here is a delete: lower
+    ``max_staleness_hours`` in config, and the next run would erase every archived
+    reading now beyond it, then push the deletion. Those are pre-kickoff ticket
+    counts that cannot be refetched, which is the one thing this file exists to
+    prevent. Archiving a reading that is currently too stale to grade costs a few
+    hundred bytes; dropping it is permanent, and a later change of mind about the
+    cap can only re-grade history that is still there.
     """
     path = pathlib.Path(path)
     games = conn.execute(
@@ -282,7 +336,8 @@ def save_log(conn, path) -> int:
         if kickoff > now:
             continue
 
-        snapshot = _deciding_snapshot(conn, away, home, kickoff)
+        # No cap: see the docstring. The archive keeps what it saw.
+        snapshot = _deciding_snapshot(conn, away, home, kickoff, max_staleness=None)
         if snapshot is None:
             continue
         observed, is_final, rows = snapshot

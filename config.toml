@@ -9,7 +9,24 @@ season = 2026
 
 [fades]
 threshold = 80
+# A second, lower band: shown on the page under "Watching", never graded and never
+# in the record. The 80% cut is a cliff -- a game at 79% is not meaningfully
+# different evidence from one at 81% -- but moving the cut would change what the
+# record measures, so the near misses are displayed instead of counted. Must be
+# below `threshold`; the band is the gap between the two.
+watch_threshold = 70
 markets = ["spread", "total"]
+
+# A bet is decided by the last reading at or before kickoff. Inside this many hours
+# of kickoff it is *confirmed*; outside, it is still graded but the page prints how
+# far out the deciding reading was. Fractional hours are allowed.
+lock_lead_hours = 2
+# Past this, a reading predates gameday and the bet is dropped rather than graded on
+# a guess. Must be at least `lock_lead_hours`. Generous next to it on purpose: the
+# scheduler misses its window often enough that a tight cap here would make the
+# record's size mostly a fact about GitHub. Note this bounds *grading* only -- the
+# archive in records/ keeps every reading it saw, whatever its age.
+max_staleness_hours = 12
 
 [paths]
 db = "data/fadepublic.db"

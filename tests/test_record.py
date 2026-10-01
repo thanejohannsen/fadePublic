@@ -13,12 +13,14 @@ from __future__ import annotations
 import json
 import pathlib
 import sqlite3
+import tempfile
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from fadepublic.db import init_db
-from fadepublic.record import MAX_STALENESS, settle, tally
+from fadepublic.fades import find_fades
+from fadepublic.record import LOCK_LEAD, MAX_STALENESS, save_log, settle, tally
 from fadepublic.splits import (
     GameSplits,
     Side,
@@ -116,7 +118,7 @@ def test_a_reading_taken_after_kickoff_never_decides(conn):
         (timedelta(hours=3), True),
         (MAX_STALENESS, True),
         (MAX_STALENESS + timedelta(minutes=1), False),
-        (timedelta(hours=5), False),
+        (timedelta(hours=13), False),
     ],
 )
 def test_a_reading_too_far_from_kickoff_is_not_gameday_evidence(lead, graded):
@@ -130,6 +132,52 @@ def test_a_reading_too_far_from_kickoff_is_not_gameday_evidence(lead, graded):
     _result(c, 30, 20)
 
     assert bool(settle(c)) is graded
+
+
+@pytest.mark.parametrize(
+    "lead, confirmed",
+    [
+        (timedelta(minutes=45), True),
+        (LOCK_LEAD, True),
+        (LOCK_LEAD + timedelta(minutes=1), False),
+        (timedelta(hours=6), False),
+    ],
+)
+def test_a_reading_outside_the_lock_window_still_grades_but_says_so(lead, confirmed):
+    """The replacement for dropping everything past one bound.
+
+    A bet decided forty minutes out and a bet decided six hours out are both real
+    bets on a real price, so both are graded -- but they are not equally good
+    evidence that the public was still on that side at kickoff, and the earlier
+    rule threw the second away rather than say which it had. The boundary is
+    asserted symbolically: it decides what the page claims, not just how much of
+    the record exists.
+    """
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _snapshot(c, KICK - lead, home_tickets=90)
+    _result(c, 30, 20)
+
+    (s,) = settle(c)
+    assert s.confirmed is confirmed
+    assert s.lead_time == lead, "and the row remembers how far out it was"
+    assert tally([s]).outside_lock == (0 if confirmed else 1)
+
+
+def test_the_lock_window_the_grader_used_is_the_one_reported():
+    """``confirmed`` is stamped by ``settle``, not recomputed from the module
+    constant. A configured window that disagreed with the flag on the row would
+    make the page's "N decided more than 2h out" sentence a lie about its own
+    record."""
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _snapshot(c, KICK - timedelta(hours=3), home_tickets=90)
+    _result(c, 30, 20)
+
+    (tight,) = settle(c, lock_lead=timedelta(hours=1))
+    (loose,) = settle(c, lock_lead=timedelta(hours=4))
+    assert tight.confirmed is False
+    assert loose.confirmed is True, "the passed window decides, not LOCK_LEAD"
 
 
 # ------------------------------------------------------------- grading
@@ -339,3 +387,63 @@ def test_a_game_that_has_not_kicked_off_is_not_archived(tmp_path):
     _snapshot(c, future - timedelta(hours=1), home_tickets=90, kickoff=future)
 
     assert save_log(c, tmp_path / "fade_log.json") == 0
+
+
+# ------------------------------------------- the watch band stays out of the record
+
+
+def test_the_watch_band_never_reaches_the_record():
+    """The whole safety property of the lower tier.
+
+    The page shows games from 70% up, the record is graded at 80, and the only thing
+    keeping those apart is that ``settle`` is called with the higher number. A game
+    at 74% is on the page and must be absent from the record no matter what it did.
+    """
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _snapshot(c, KICK - timedelta(minutes=30), home_tickets=74)
+    _result(c, 30, 20)
+
+    assert settle(c, threshold=80) == [], "74% is not a bet the record knows about"
+    assert len(settle(c, threshold=70)) == 1, "and the band itself is really there"
+
+
+def test_partitioning_one_pass_equals_asking_at_the_higher_threshold():
+    """``cli`` makes one ``find_fades`` call at the watch threshold and splits the
+    result, rather than calling it twice. That is only safe if the upper half is
+    identical to what asking directly would have produced -- including order, since
+    the board is read top to bottom."""
+    path = pathlib.Path(__file__).parent.parent / "fixtures" / "action_network_nfl.json"
+    games = parse_games(json.loads(path.read_text()))
+    now = min(g.kickoff_utc for g in games if g.kickoff_utc) - timedelta(hours=1)
+
+    direct = find_fades(games, threshold=80, now=now)
+    partitioned = [
+        f for f in find_fades(games, threshold=70, now=now) if f.public.tickets >= 80
+    ]
+
+    assert partitioned == direct
+    assert len(find_fades(games, threshold=70, now=now)) > len(direct), (
+        "and the lower threshold really is a superset, or this proves nothing"
+    )
+
+
+def test_the_archive_is_never_shrunk_by_a_narrower_grading_cap():
+    """``save_log`` rewrites the file wholesale, so any bound it applied would be a
+    delete. A pre-kickoff ticket count cannot be refetched once the game is over, so
+    lowering the grading cap must cost re-grading, never history."""
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _snapshot(c, KICK - timedelta(hours=10), home_tickets=90)
+    _result(c, 30, 20)
+
+    with tempfile.TemporaryDirectory() as d:
+        log = pathlib.Path(d) / "fade_log.json"
+        assert save_log(c, log) == 1, "a 10h-out reading is archived"
+
+        # Re-run the whole refresh cycle with a cap that will not grade it.
+        settle(c, max_staleness=timedelta(hours=4))
+        save_log(c, log)
+
+        kept = json.loads(log.read_text())["games"]
+        assert len(kept) == 1, "the reading survives a cap that cannot grade it"

@@ -13,7 +13,7 @@ from datetime import UTC, datetime, timedelta
 
 from fadepublic.fades import Fade
 from fadepublic.record import Settled
-from fadepublic.render import render_board, render_page
+from fadepublic.render import _watch_panel, render_board, render_page
 from fadepublic.splits import Side
 
 KICKOFF = datetime(2026, 9, 27, 17, 0, tzinfo=UTC)
@@ -36,14 +36,15 @@ def _fade(side="under", tickets=93, money=95, line=47.5, market="total"):
     )
 
 
-def _settled(result="win", from_final_tally=True, tickets=88):
+def _settled(result="win", from_final_tally=True, tickets=88, lead=None, confirmed=True):
     return Settled(
         fade=_fade(tickets=tickets),
-        observed_at=KICKOFF - timedelta(minutes=30),
+        observed_at=KICKOFF - (lead if lead is not None else timedelta(minutes=30)),
         from_final_tally=from_final_tally,
         result=result,
         away_points=31,
         home_points=33,
+        confirmed=confirmed,
     )
 
 
@@ -158,3 +159,96 @@ def test_no_server_rendered_countdown_survives_in_the_page():
     html = render_page([_fade()])
     assert "data-kickoff" in html
     assert "Sun 17:00" in html, "the no-JavaScript fallback is the absolute time"
+
+
+# ----------------------------------------------------- the watch band, display only
+
+
+def test_the_watch_band_is_its_own_panel_and_says_it_is_not_recorded():
+    """It sits next to a running win-loss record, so the one thing a visitor must
+    not conclude is that these rows are in it."""
+    panel = _watch_panel([_fade(tickets=74)], 70, 80)
+
+    assert panel.count('<div class="panel"') == 1, "its own panel, not board rows"
+    assert "<h2>" in panel, "with a heading, so the two sections are not one list"
+    assert "Not recorded" in panel
+    assert "74%" in panel, "and the actual share, like every other row here"
+
+
+def test_the_watch_band_label_is_derived_from_both_thresholds():
+    """Hardcoding "70-79%" would quietly lie the moment either threshold moved."""
+    assert "70% and 79%" in _watch_panel([_fade(tickets=74)], 70, 80)
+    assert "60% and 84%" in _watch_panel([_fade(tickets=74)], 60, 85)
+
+
+def test_no_watch_panel_at_all_when_nothing_is_in_the_band():
+    """A heading over an empty table is a question the reader cannot answer, and an
+    unstable blank panel would also churn the published diff."""
+    assert _watch_panel([], 70, 80) == ""
+
+
+def test_the_watch_panel_survives_an_empty_board():
+    """Early in the week the board is empty and the band is not -- the path that
+    renders a bare "nothing qualifies" message must still carry the panel."""
+    html = render_page([], watch=[_fade(tickets=74)])
+
+    assert "No spread or total is currently carrying 80%" in html
+    assert "Watching" in html and "74%" in html
+    assert "shows under Watching below" in html, "and the two must not contradict"
+
+
+def test_the_board_keeps_three_columns_with_a_watch_panel_present():
+    """The watch table lives outside render_board precisely so the column-count
+    guarantee stays checkable on the board alone."""
+    assert render_board([_fade()]).count("<th") == 3
+    assert render_page([_fade()], watch=[_fade(tickets=74)]).count('class="stamp"') == 1
+
+
+# -------------------------------------------------- how stale the deciding reading was
+
+
+def test_a_bet_decided_outside_the_lock_window_shows_how_far_out():
+    """The replacement for silently dropping it. The number is the whole point: it
+    is what separates a bet confirmed near kickoff from one inferred hours earlier."""
+    stale = _settled(from_final_tally=False, lead=timedelta(hours=5, minutes=12),
+                     confirmed=False)
+    panel = render_board([_fade()], settled=[stale])
+
+    assert "5h12m before kickoff" in panel
+    assert "1 of 1 were decided by a reading more than 2h before kickoff" in panel
+
+
+def test_a_confirmed_bet_says_nothing_about_its_lead_time():
+    """Only the exceptions are worth a sub-line; annotating every row would make the
+    annotation invisible."""
+    panel = render_board([_fade()], settled=[_settled(from_final_tally=False)])
+
+    # "before kickoff" also occurs in the rule's own prose; the closing tag is what
+    # makes this the per-row annotation rather than the explanation above it.
+    assert "before kickoff</span>" not in panel
+    assert "were decided by a reading more than" not in panel
+
+
+def test_a_closing_count_is_never_also_labelled_with_a_lead_time():
+    """A backfilled row is stamped at kickoff, so its lead is zero -- it would read
+    "0m before kickoff", the most confident label on the row with the weakest basis.
+    The two sub-lines are mutually exclusive."""
+    mixed = [
+        _settled(from_final_tally=True, lead=timedelta(0)),
+        _settled(from_final_tally=False, lead=timedelta(hours=6), confirmed=False),
+    ]
+    panel = render_board([_fade()], settled=mixed)
+
+    assert "closing count" in panel
+    assert "0m before kickoff" not in panel
+    assert "6h before kickoff" in panel
+
+
+def test_the_staleness_rule_is_stated_from_the_constants_not_a_literal():
+    """The prose said "within 4 hours of kickoff" as a hardcoded string, which went
+    stale the moment the rule changed. It is now two bounds, and both come from the
+    values that actually do the grading."""
+    panel = render_board([_fade()], settled=[_settled()])
+
+    assert "4 hours" not in panel
+    assert "2h" in panel and "12h" in panel
