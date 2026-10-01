@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Fade the public</title>
+<style>
+:root {
+  --bg: #fbfbf9; --panel: #ffffff; --ink: #1a1a18; --muted: #6b6b64;
+  --line: #e5e4de; --accent: #1f6f5c; --warn: #a8501e; --good: #1f6f5c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14140f; --panel: #1c1c18; --ink: #ecece4; --muted: #9a9a90;
+    --line: #2e2e28; --accent: #6cc0a4; --warn: #d99257; --good: #6cc0a4;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14140f; --panel: #1c1c18; --ink: #ecece4; --muted: #9a9a90;
+  --line: #2e2e28; --accent: #6cc0a4; --warn: #d99257; --good: #6cc0a4;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); margin: 0;
+  font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  padding: 2rem 1.25rem 4rem;
+}
+.wrap { max-width: 760px; margin: 0 auto; }
+h1 { font-size: 1.4rem; margin: 0 0 .2rem; letter-spacing: -.01em; }
+.stamp { color: var(--muted); font-size: .85rem; margin: 0 0 1.5rem; }
+.panel {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  padding: 1.1rem 1.2rem; margin-bottom: 1rem;
+}
+.panel h2 {
+  font-size: .72rem; text-transform: uppercase; letter-spacing: .09em;
+  color: var(--muted); margin: 0 0 .85rem; font-weight: 600;
+}
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+/* Horizontal padding between columns, but flush at the table's own edges, so a
+   right-aligned number does not run into the text of the next column. */
+td, th { padding: .32rem .28rem; text-align: left; border-bottom: 1px solid var(--line); }
+td:first-child, th:first-child { padding-left: 0; }
+td:last-child, th:last-child { padding-right: 0; }
+th { font-size: .68rem; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+tr:last-child td { border-bottom: 0; }
+.num { text-align: right; }
+.slot { color: var(--muted); font-size: .8rem; }
+.good { color: var(--good); }
+.conflict { color: var(--warn); }
+.note { color: var(--muted); font-size: .82rem; margin-top: .8rem; }
+.scroll { overflow-x: auto; }
+/* Cells here are short -- a team pair, a percentage, a line -- so the table has
+   a low floor and the sub-lines below keep the Bet column, the only cell there
+   is to act on, on screen at 390px. As six columns it was pushed off entirely. */
+.scroll table.fade { min-width: 19rem; }
+.fade td { white-space: nowrap; }
+.fade td.pub { white-space: normal; }
+.fade .detail { display: block; font-size: .8rem; color: var(--muted); }
+/* The record reads before the board does: it is the reason to trust or ignore
+   everything under it. */
+.record { display: flex; align-items: baseline; gap: .6rem; margin: 0 0 .2rem; }
+.record .tally {
+  font-size: 1.9rem; font-weight: 650; letter-spacing: -.02em;
+  font-variant-numeric: tabular-nums;
+}
+.record .recsub { color: var(--muted); font-size: .85rem; margin: 0; }
+.logh {
+  font-size: .78rem; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted); margin: 1.6rem 0 .4rem;
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Fade the public</h1>
+  <p class="stamp">Updated Thu 1 Oct 20:53 UTC</p>
+  <div class="panel"><div class="record"><span class="tally">16-4</span><span class="recsub">80% &middot; +10.5u at -110</span></div><p class="note">All 20 were graded from the closing ticket count rather than a pre-kickoff reading, which is all the feed still serves for a finished week. A bet is decided by the last snapshot within 4 hours of kickoff, so a game that fell off the board during the week is never counted.</p><div class="scroll"><table class="fade"><tr><th>Game</th><th>Public is on</th><th>Bet</th></tr><tr><td>IND @ WAS<span class="detail" data-kickoff="2026-10-04T13:30:00+00:00">Sun 13:30</span></td><td class="pub">under <b>93%</b><span class="detail">95% of money</span></td><td><b>over 48</b><span class="detail">-113</span></td></tr></table></div><p class="note">Spreads and totals only, at 80% of <b>tickets</b> -- a headcount, not money. Moneylines are excluded: they reach this threshold almost automatically, because everyone takes the big favourite for a small payout.</p><p class="note">Recomputed every refresh, so anything that stops qualifying disappears on its own. <b>This is a log, not advice.</b> The record below is a thin sample, and the rule was found on the same weeks it is scored against -- the ordinary way a number like it appears and then evaporates.</p><p class="note">The under leads tickets in most games here -- 52 of 64 sampled -- which inverts the usual public bias, so the direction was checked rather than trusted. It holds: on 30 Sep two live totals pointing opposite ways each matched an independent public board exactly, money share included. Why the crowd sits on unders is unexplained, but the labels are not the reason. Both sides are printed so the next check stays a glance.</p><h3 class="logh">Settled</h3><div class="scroll"><table class="fade"><tr><th>Game</th><th>Bet</th><th>Score</th></tr><tr><td>BAL @ DAL<span class="detail">Sep 27</span></td><td>over 54.5<span class="detail">public under 83%</span></td><td class="num">34-31<span class="detail good">win</span></td></tr><tr><td>ARI @ SF<span class="detail">Sep 27</span></td><td>ARI +7.5<span class="detail">public home 84%</span></td><td class="num">30-36<span class="detail good">win</span></td></tr><tr><td>SEA @ WAS<span class="detail">Sep 27</span></td><td>WAS +8.5<span class="detail">public away 88%</span></td><td class="num">31-33<span class="detail good">win</span></td></tr><tr><td>KC @ MIA<span class="detail">Sep 27</span></td><td>MIA +9.5<span class="detail">public away 86%</span></td><td class="num">24-10<span class="detail conflict">loss</span></td></tr><tr><td>IND @ KC<span class="detail">Sep 21</span></td><td>IND +6<span class="detail">public home 81%</span></td><td class="num">30-33<span class="detail good">win</span></td></tr><tr><td>MIA @ SF<span class="detail">Sep 20</span></td><td>MIA +12.5<span class="detail">public home 87%</span></td><td class="num">13-35<span class="detail conflict">loss</span></td></tr><tr><td>PHI @ TEN<span class="detail">Sep 20</span></td><td>TEN +7<span class="detail">public away 94%</span></td><td class="num">24-20<span class="detail good">win</span></td></tr><tr><td>NO @ BAL<span class="detail">Sep 20</span></td><td>NO +8.5<span class="detail">public home 82%</span></td><td class="num">24-17<span class="detail good">win</span></td></tr><tr><td>CLE @ TB<span class="detail">Sep 20</span></td><td>CLE +8.5<span class="detail">public home 88%</span></td><td class="num">23-19<span class="detail good">win</span></td></tr><tr><td>DET @ BUF<span class="detail">Sep 18</span></td><td>over 54.5<span class="detail">public under 83%</span></td><td class="num">31-41<span class="detail good">win</span></td></tr><tr><td>DAL @ NYG<span class="detail">Sep 14</span></td><td>over 47.5<span class="detail">public under 85%</span></td><td class="num">20-28<span class="detail good">win</span></td></tr><tr><td>WAS @ PHI<span class="detail">Sep 13</span></td><td>over 44<span class="detail">public under 86%</span></td><td class="num">22-24<span class="detail good">win</span></td></tr><tr><td>GB @ MIN<span class="detail">Sep 13</span></td><td>over 45.5<span class="detail">public under 91%</span></td><td class="num">22-39<span class="detail good">win</span></td></tr><tr><td>ARI @ LAC<span class="detail">Sep 13</span></td><td>over 47<span class="detail">public under 90%</span></td><td class="num">26-14<span class="detail conflict">loss</span></td></tr><tr><td>TB @ CIN<span class="detail">Sep 13</span></td><td>over 50.5<span class="detail">public under 90%</span></td><td class="num">27-33<span class="detail good">win</span></td></tr><tr><td>NO @ DET<span class="detail">Sep 13</span></td><td>over 49.5<span class="detail">public under 86%</span></td><td class="num">30-31<span class="detail good">win</span></td></tr><tr><td>CHI @ CAR<span class="detail">Sep 13</span></td><td>over 47<span class="detail">public under 89%</span></td><td class="num">59-37<span class="detail good">win</span></td></tr><tr><td>BUF @ HOU<span class="detail">Sep 13</span></td><td>over 44.5<span class="detail">public under 83%</span></td><td class="num">36-31<span class="detail good">win</span></td></tr><tr><td>BAL @ IND<span class="detail">Sep 13</span></td><td>over 48.5<span class="detail">public under 87%</span></td><td class="num">41-23<span class="detail good">win</span></td></tr><tr><td>SF @ LA<span class="detail">Sep 11</span></td><td>over 47.5<span class="detail">public under 80%</span></td><td class="num">27-7<span class="detail conflict">loss</span></td></tr></table></div></div>
+</div>
+<script>
+// Countdowns are recomputed in the browser from absolute kickoff times, so the
+// page stays correct between scheduled refreshes. Without this the publisher
+// would have to rewrite and commit the page every hour purely to keep a
+// relative time honest. Server-rendered text remains the no-JavaScript
+// fallback.
+(function () {
+  function label(ms) {
+    if (ms <= 0) return "started";
+    var m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60);
+    if (d) return d + "d " + h + "h";
+    if (h) return h + "h " + (m % 60) + "m";
+    return m + "m";
+  }
+  function tick() {
+    var now = Date.now();
+    document.querySelectorAll("[data-kickoff]").forEach(function (el) {
+      var t = Date.parse(el.getAttribute("data-kickoff"));
+      if (!isNaN(t)) el.textContent = label(t - now);
+    });
+  }
+  tick();
+  setInterval(tick, 30000);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# Share of *tickets* -- a headcount, not money -- that makes a side "the public"
+# and puts the other side on the board. Moneylines are deliberately not listed:
+# they reach any threshold almost automatically, because everyone takes the big
+# favourite for a small payout.
+#
+# The board is a log, not advice. See the README for what the record does and
+# does not establish.
+season = 2026
+
+[fades]
+threshold = 80
+markets = ["spread", "total"]
+
+[paths]
+db = "data/fadepublic.db"
+site = "docs"
+# Tracked, unlike the database. A pre-kickoff ticket count cannot be refetched
+# once the game is over, so the settled history lives here.
+fade_log = "records/fade_log.json"

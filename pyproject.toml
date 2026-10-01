@@ -1,0 +1,19 @@
+[project]
+name = "fadepublic"
+version = "0.1.0"
+description = "NFL games where the betting tickets are lopsided enough to bet against"
+requires-python = ">=3.11"
+dependencies = ["httpx>=0.27"]
+
+[project.scripts]
+fade = "fadepublic.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["fadepublic*"]
+
+[tool.ruff]
+line-length = 100

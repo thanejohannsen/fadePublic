@@ -1,0 +1,95 @@
+name: Refresh board
+
+# Every fifteen minutes. GitHub will not oblige: scheduled workflows are
+# best-effort and are dropped under load rather than queued. Measured on the
+# repository this was split out of, a */15 schedule delivered about five runs a
+# day. Asking often does not make the scheduler punctual, it makes a missed slot
+# cost minutes instead of hours.
+#
+# What that costs here: a bet only enters the record if a reading was taken
+# within four hours of kickoff (see record.py), so sparse delivery drops bets
+# rather than mis-grading them. If that matters, drive `workflow_dispatch` from
+# an external cron instead -- manual dispatches are not deprioritised the way
+# schedules are.
+#
+# GitHub also disables scheduled workflows after 60 days of repository
+# inactivity; the commit this job makes keeps it alive.
+on:
+  schedule:
+    - cron: "7,22,37,52 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+
+      # The database is a working cache -- everything in it is either refetchable
+      # or mirrored into records/, which is committed. Restoring it just avoids
+      # re-reading history the archive already holds.
+      - name: Restore data cache
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: fadepublic-data-${{ github.run_id }}
+          restore-keys: fadepublic-data-
+
+      - name: Refresh
+        run: fade refresh
+
+      - name: Save data cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: data
+          key: fadepublic-data-${{ github.run_id }}
+
+      # records/ carries the settled history and is committed unconditionally:
+      # a pre-kickoff ticket count cannot be refetched once the game is over, so
+      # losing it to a cache eviction would take the record with it.
+      #
+      # docs/ is committed only when something other than the timestamp changed.
+      # Every run rewrites the stamp, so committing unconditionally would produce
+      # a commit every fifteen minutes and bury real changes in noise. The stamp
+      # is identified by class="stamp", which a test asserts appears exactly once
+      # and only on that line.
+      - name: Publish if changed
+        run: |
+          git config user.name "fadepublic-bot"
+          git config user.email "noreply@github.com"
+          if ! git diff --quiet -- records/; then
+            git add records/
+            git commit -m "Record settled bets"
+          fi
+          if git diff --quiet -- docs/; then
+            echo "No change to the board."
+          else
+            changed=$(git diff -U0 -- docs/ | grep -E '^[+-]' | grep -vE '^(\+\+\+|---)' \
+              | grep -vc 'class="stamp"' || true)
+            if [ "$changed" -eq 0 ]; then
+              echo "Only the timestamp moved; skipping."
+              git checkout -- docs/
+            else
+              git add docs/
+              git commit -m "Refresh board"
+            fi
+          fi
+          git push
