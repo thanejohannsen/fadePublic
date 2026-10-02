@@ -163,7 +163,7 @@ def _fade_rows(fades) -> str:
         odds = f'<span class="detail">{f.bet.odds:+d}</span>' if f.bet.odds else ""
         rows.append(
             f"<tr><td>{_esc(f.game)}{when}</td>"
-            f'<td class="pub">{_esc(f.public.side)} <b>{f.public.tickets}%</b>{detail}</td>'
+            f'<td class="pub">{_esc(f.public_label)} <b>{f.public.tickets}%</b>{detail}</td>'
             f"<td><b>{_esc(f.line_label)}</b>{odds}</td></tr>"
         )
     return "".join(rows)
@@ -264,7 +264,7 @@ def _settled_table(settled) -> str:
             f"<tr><td>{_esc(s.game)}"
             f'<span class="detail">{_esc(when)}</span></td>'
             f"<td>{_esc(s.fade.line_label)}"
-            f'<span class="detail">public {_esc(s.fade.public.side)} '
+            f'<span class="detail">public {_esc(s.fade.public_label)} '
             f"{s.fade.public.tickets}%</span>{flag}</td>"
             f'<td class="num">{_esc(s.score)}'
             f'<span class="detail {cls}">{s.result}</span></td></tr>'

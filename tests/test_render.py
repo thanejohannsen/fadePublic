@@ -65,7 +65,11 @@ def test_the_board_states_the_bet_rather_than_leaving_it_implied():
     """"over 47.5" is actionable; "fade the under" makes the reader do the flip,
     and a reader doing the flip is a reader who can get it backwards."""
     panel = render_board([_fade(side="over", tickets=85, money=90, line=38.5)])
-    assert "under 38.5" in panel, "the bet, not the popular side"
+    # Against the bet cell's own markup, not the whole panel: now that the public
+    # cell also carries a line, a bare substring check would be satisfied by either
+    # cell and would stop proving the sentence in this test's name.
+    assert "<td><b>under 38.5</b>" in panel, "the bet, not the popular side"
+    assert '<td class="pub">over 38.5 ' in panel, "and the crowd's side says 38.5 too"
 
 
 def test_a_spread_names_the_team_rather_than_an_end_of_the_fixture():
@@ -75,6 +79,9 @@ def test_a_spread_names_the_team_rather_than_an_end_of_the_fixture():
     panel = render_board([_fade(side="away", tickets=86, money=80, line=-9.5, market="spread")])
     assert "WAS +9.5" in panel
     assert "home +9.5" not in panel
+    # The public cell is held to the same standard the bet cell already was.
+    assert "IND -9.5" in panel, "the crowd's team, not the fixture end it sits on"
+    assert "away -9.5" not in panel
 
 
 def test_the_money_share_is_reported_without_a_verdict():
@@ -292,3 +299,27 @@ def test_the_three_panels_appear_in_order_and_only_when_they_have_content():
     board_only = render_page([_fade()])
     assert board_only.count('<div class="panel"') == 1
     assert "Settled" not in board_only
+
+
+def test_no_table_anywhere_still_prints_a_raw_feed_key():
+    """The regression this change exists to prevent, checked on the whole page so a
+    new table cannot reintroduce it unnoticed. "away"/"home" are feed keys, not
+    things a person says."""
+    page = render_page(
+        [_fade(side="away", tickets=86, line=-9.5, market="spread")],
+        settled=[_settled()],
+        watch=[_fade(side="home", tickets=74, line=3.5, market="spread")],
+    )
+
+    assert 'class="pub">away ' not in page
+    assert 'class="pub">home ' not in page
+    assert "public away " not in page, "the settled log's sub-line too"
+    assert "public home " not in page
+
+
+def test_the_settled_log_names_both_teams():
+    """The log is the record's evidence, so it has to be readable on its own: which
+    team the crowd was on, and which one the rule took."""
+    page = render_page([], settled=[_settled(tickets=86)])
+
+    assert "public under 47.5 86%" in page, "named side, its line, its share"

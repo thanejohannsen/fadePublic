@@ -80,19 +80,45 @@ class Fade:
     @property
     def bet_name(self) -> str:
         """Who you are backing: a team for a spread, over/under for a total."""
-        if self.market == "total":
-            return self.bet.side
-        team = {"away": self.away, "home": self.home}.get(self.bet.side, "")
-        return team or self.bet.side
+        return self._name(self.bet)
 
     @property
     def line_label(self) -> str:
         """The bet as it would be written on a ticket."""
-        if self.bet.line is None:
-            return self.bet_name
+        return self._label(self.bet)
+
+    @property
+    def public_label(self) -> str:
+        """The popular side, written the same way the bet is.
+
+        It used to print the raw feed key -- "away 79%" -- which made the reader
+        map a fixture end onto a team to know what the crowd was actually on. That
+        is the same failure the bet column was given a team name to avoid; the
+        public column simply never got the same treatment.
+        """
+        return self._label(self.public)
+
+    def _name(self, side: Side) -> str:
+        """A side as a person would say it, not as the feed keys it."""
         if self.market == "total":
-            return f"{self.bet_name} {self.bet.line:g}"
-        return f"{self.bet_name} {self.bet.line:+g}"
+            return side.side
+        team = {"away": self.away, "home": self.home}.get(side.side, "")
+        return team or side.side
+
+    def _label(self, side: Side) -> str:
+        """``_name`` plus the side's own line.
+
+        Reads ``side.line`` rather than negating the other side's. The two halves of
+        a spread are usually mirror images but the feed does not promise it -- in
+        the week 3 fixture LAC @ BUF is quoted 7 / -7.5 and MIN @ TB -1.5 / 1 -- and
+        deriving one from the other would print a number no book ever offered.
+        """
+        name = self._name(side)
+        if side.line is None:
+            return name
+        if self.market == "total":
+            return f"{name} {side.line:g}"
+        return f"{name} {side.line:+g}"
 
 
 def find_fades(

@@ -195,3 +195,62 @@ def test_ticket_shares_sum_to_a_hundred(payload):
             pair = [s for (m, _), s in g.sides.items() if m == market]
             if len(pair) == 2:
                 assert pair[0].tickets + pair[1].tickets == 100, f"{g.label} {market}"
+
+
+# ------------------------------------------- naming the popular side, not keying it
+
+
+def test_the_popular_side_is_named_the_way_the_bet_is():
+    """"away 88%" made the reader map a fixture end onto a team to know what the
+    crowd was actually on -- the same failure the bet column was given a team name
+    to avoid."""
+    g = game([
+        side("spread", "away", 88, money=70, line=-9.5),
+        side("spread", "home", 12, money=30, line=9.5),
+    ])
+    (fade,) = find_fades([g], threshold=80, now=NOW)
+
+    assert fade.public_label == "AAA -9.5", "the crowd's team and the crowd's number"
+    assert fade.line_label == "BBB +9.5", "and the bet unchanged beside it"
+
+
+def test_a_total_carries_its_number_on_both_sides():
+    """Both halves of a total quote the same line, so it reads twice in one row.
+    Worth it: "over 72%" alone does not say what is being bet over."""
+    g = game([
+        side("total", "under", 93, money=95, line=47.5),
+        side("total", "over", 7, money=5, line=47.5),
+    ])
+    (fade,) = find_fades([g], threshold=80, now=NOW)
+
+    assert fade.public_label == "under 47.5"
+    assert fade.line_label == "over 47.5"
+
+
+def test_the_popular_side_prints_its_own_line_not_the_negation_of_the_bet():
+    """The two halves of a spread are usually mirror images, and the feed does not
+    promise it: in the week 3 fixture LAC @ BUF is quoted 7 / -7.5 and MIN @ TB
+    -1.5 / 1. Deriving one label from the other would print a price no book ever
+    offered, and nothing else in the suite would notice."""
+    g = game([
+        side("spread", "away", 88, money=70, line=7),
+        side("spread", "home", 12, money=30, line=-7.5),
+    ])
+    (fade,) = find_fades([g], threshold=80, now=NOW)
+
+    assert fade.public_label == "AAA +7", "the feed's own number for that side"
+    assert fade.public_label != "AAA +7.5", "which is not the bet's line negated"
+    assert fade.line_label == "BBB -7.5"
+
+
+def test_a_side_with_no_line_is_still_named():
+    """A market can arrive without a price. The label degrades to the name rather
+    than printing None beside a percentage."""
+    g = game([
+        side("spread", "away", 88, money=70, line=None),
+        side("spread", "home", 12, money=30, line=None),
+    ])
+    (fade,) = find_fades([g], threshold=80, now=NOW)
+
+    assert fade.public_label == "AAA"
+    assert fade.line_label == "BBB"
