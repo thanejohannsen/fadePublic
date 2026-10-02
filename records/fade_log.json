@@ -3119,6 +3119,71 @@
      "tickets": 45
     }
    ]
+  },
+  {
+   "away": "PIT",
+   "away_points": 7,
+   "home": "CLE",
+   "home_points": 14,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-02T00:15:00+00:00",
+   "observed_at": "2026-10-01T22:02:58+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 93,
+     "num_bets": 135729,
+     "odds": -150,
+     "side": "away",
+     "tickets": 77
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 7,
+     "num_bets": 135729,
+     "odds": 125,
+     "side": "home",
+     "tickets": 23
+    },
+    {
+     "line": -2.5,
+     "market": "spread",
+     "money": 48,
+     "num_bets": 135729,
+     "odds": -120,
+     "side": "away",
+     "tickets": 51
+    },
+    {
+     "line": 2.5,
+     "market": "spread",
+     "money": 52,
+     "num_bets": 135729,
+     "odds": -100,
+     "side": "home",
+     "tickets": 49
+    },
+    {
+     "line": 37.5,
+     "market": "total",
+     "money": 66,
+     "num_bets": 135729,
+     "odds": -112,
+     "side": "over",
+     "tickets": 72
+    },
+    {
+     "line": 37.5,
+     "market": "total",
+     "money": 34,
+     "num_bets": 135729,
+     "odds": -109,
+     "side": "under",
+     "tickets": 28
+    }
+   ]
   }
  ],
  "version": 1
