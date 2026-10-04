@@ -3772,9 +3772,9 @@
   },
   {
    "away": "MIA",
-   "away_points": null,
+   "away_points": 10,
    "home": "MIN",
-   "home_points": null,
+   "home_points": 15,
    "is_final": 0,
    "kickoff_utc": "2026-10-04T20:05:00+00:00",
    "observed_at": "2026-10-04T19:44:16+00:00",
