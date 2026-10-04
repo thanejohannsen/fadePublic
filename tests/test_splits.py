@@ -17,7 +17,12 @@ import logging
 import sqlite3
 
 from fadepublic.db import init_db
-from fadepublic.splits import COMPLETE_STATUS, parse_games, store_results
+from fadepublic.splits import (
+    COMPLETE_STATUS,
+    parse_games,
+    store_results,
+    store_splits,
+)
 
 
 def _payload(status, *, away_points=None, home_points=None):
@@ -180,3 +185,93 @@ def test_the_backfill_filter_excludes_a_game_still_being_played():
 
     assert len(kept) == 1
     assert kept[0].away_points == 30, "only the finished game is backfillable"
+
+
+# ------------------------------------- an incomplete game has no result, actively
+
+
+def _seeded(conn, away_points, home_points):
+    """A result row written the way a pre-fix run wrote them: from a live score."""
+    conn.execute(
+        """INSERT OR REPLACE INTO game_results
+               (away, home, kickoff_utc, away_points, home_points, recorded_at)
+           VALUES ('AAA', 'BBB', '2026-10-04T13:30:00+00:00', ?, ?, 'seeded')""",
+        (away_points, home_points),
+    )
+    conn.commit()
+
+
+def _results(conn):
+    return conn.execute(
+        "SELECT away_points, home_points FROM game_results"
+    ).fetchall()
+
+
+def test_a_result_already_recorded_is_retracted_once_the_game_reads_in_progress():
+    """Writing only was not enough.
+
+    The fix to `final` stopped new live scores being written, but rows written
+    before it survived and kept being graded -- the published record carried a win
+    on a game still in its third quarter. A game the feed does not call complete
+    has its result deleted, not merely skipped.
+    """
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _seeded(c, 6, 16)
+    (live,) = parse_games(_payload("inprogress", away_points=13, home_points=16))
+
+    assert store_results(c, [live]) == 0, "nothing written for a live game"
+    assert _results(c) == [], "and the stale row is gone, not left behind"
+
+
+def test_a_completed_game_keeps_its_result_and_takes_a_correction():
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _seeded(c, 6, 16)
+    (done,) = parse_games(_payload(COMPLETE_STATUS, away_points=30, home_points=13))
+
+    assert store_results(c, [done]) == 1
+    assert _results(c) == [(30, 13)], "the real final replaces the partial one"
+
+
+def test_a_game_absent_from_the_payload_is_left_alone():
+    """The guarantee that makes deletion safe. A completed game from an earlier week
+    is not in the feed's response at all, so it must never be a candidate."""
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _seeded(c, 30, 13)
+    other = parse_games(_payload("inprogress", away_points=3, home_points=0))
+    object.__setattr__(other[0], "away", "CCC")
+
+    store_results(c, other)
+
+    assert _results(c) == [(30, 13)], "a result nobody asked about is untouched"
+
+
+def test_retracting_a_result_keeps_the_pre_kickoff_reading():
+    """The verdict is withdrawn; the evidence is not. Those readings cannot be
+    refetched once the game is over, which is the whole reason records/ is tracked.
+    """
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    (live,) = parse_games(_payload("inprogress", away_points=13, home_points=16))
+    store_splits(c, [live])
+    _seeded(c, 6, 16)
+
+    store_results(c, [live])
+
+    assert _results(c) == []
+    assert c.execute("SELECT COUNT(*) FROM betting_splits").fetchone()[0] > 0
+
+
+def test_a_scheduled_game_with_a_stale_result_is_also_retracted():
+    """A postponed or rescheduled game reads as scheduled again. It has not been
+    played at that kickoff, so it has no result either."""
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _seeded(c, 6, 16)
+    (sched,) = parse_games(_payload("scheduled"))
+
+    store_results(c, [sched])
+
+    assert _results(c) == []

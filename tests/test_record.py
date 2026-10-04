@@ -491,3 +491,63 @@ def test_the_same_game_grades_once_it_is_over():
     (s,) = settle(c)
     assert s.score == "30-13"
     assert s.observed_at == KICK - timedelta(minutes=30), "the pre-kickoff reading"
+
+
+def test_a_bad_result_restored_from_the_archive_is_cleared_not_graded():
+    """The full shape of the failure, at the level that published it.
+
+    A run graded a game mid-play, so its partial score went into the committed
+    archive. On the next run ``load_log`` replays that archive, which is why fixing
+    ``final`` alone did not help: the row came straight back and kept being graded.
+    ``store_results`` now retracts it, so the record corrects itself rather than
+    waiting for somebody to edit the archive by hand.
+    """
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _snapshot(c, KICK - timedelta(minutes=30), home_tickets=90)
+    # As load_log would have restored it from a pre-fix archive.
+    _result(c, 6, 16)
+    assert settle(c), "precondition: the bad row really would be graded"
+
+    # Now the feed, reporting the game still in play.
+    store_results(
+        c,
+        [
+            GameSplits(
+                away="AAA", home="BBB", kickoff_utc=KICK, status="inprogress",
+                num_bets=5000, away_points=13, home_points=16,
+            )
+        ],
+    )
+
+    assert settle(c) == [], "the verdict is withdrawn"
+    assert (
+        c.execute("SELECT COUNT(*) FROM betting_splits").fetchone()[0] > 0
+    ), "and the reading that would decide it is kept for when the game ends"
+
+
+def test_the_archive_written_after_a_retraction_carries_no_score():
+    """save_log rewrites from the database, so the retraction has to reach disk --
+    otherwise the next run replays the same bad score again."""
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _snapshot(c, KICK - timedelta(minutes=30), home_tickets=90)
+    _result(c, 6, 16)
+    store_results(
+        c,
+        [
+            GameSplits(
+                away="AAA", home="BBB", kickoff_utc=KICK, status="inprogress",
+                num_bets=5000, away_points=13, home_points=16,
+            )
+        ],
+    )
+
+    with tempfile.TemporaryDirectory() as d:
+        log = pathlib.Path(d) / "fade_log.json"
+        save_log(c, log)
+        entries = json.loads(log.read_text())["games"]
+
+    (entry,) = entries
+    assert entry["away_points"] is None, "no score until the game is complete"
+    assert entry["sides"], "but the pre-kickoff reading is archived"

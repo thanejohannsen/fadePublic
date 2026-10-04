@@ -28,7 +28,6 @@ def cmd_refresh(args: argparse.Namespace) -> int:
         games = fetch_splits()
         if games:
             store_splits(conn, games, now)
-            store_results(conn, games)
             # One pass at the lower threshold, then split. Asking find_fades twice
             # would run the rule twice; partitioning its output keeps a single
             # definition of what qualifies and inherits its sort order for both
@@ -48,6 +47,13 @@ def cmd_refresh(args: argparse.Namespace) -> int:
         # restores it from a cache that gets evicted, so without this a run on a
         # fresh checkout would grade an empty history.
         load_log(conn, cfg.fade_log)
+        # Scores go in *after* the replay, deliberately. store_results retracts the
+        # result of any game the feed does not call complete, and the archive still
+        # holds rows written while games were in play -- so running it first would
+        # see the retraction undone by load_log two lines later. Nothing else writes
+        # game_results, so the upsert half does not care about the order.
+        if games:
+            store_results(conn, games)
         # The record is graded at cfg.threshold, never at cfg.watch_threshold, so
         # the watch band is structurally incapable of entering it.
         settled = settle(
@@ -99,18 +105,25 @@ def cmd_backfill(args: argparse.Namespace) -> int:
     season = args.season or cfg.season
 
     with open_db(cfg.db) as conn:
+        fetched: list = []
         for week in weeks:
             games = fetch_splits(week=week, season=season)
+            fetched += games
             final = [g for g in games if g.final and g.kickoff_utc is not None]
             if not final:
                 print(f"week {week}: nothing completed, skipped")
                 continue
             for game in final:
                 store_splits(conn, [game], fetched_at=game.kickoff_utc, is_final=True)
-            store_results(conn, final)
             print(f"week {week}: {len(final)} completed games")
 
         load_log(conn, cfg.fade_log)
+        # Every game fetched, not just the completed ones, and after the replay --
+        # same reasoning as cmd_refresh. store_results holds the invariant that an
+        # incomplete game has no result, so handing it the whole set lets it retract
+        # a stale row for a game in this week that is still being played.
+        if fetched:
+            store_results(conn, fetched)
         settled = settle(
             conn,
             threshold=cfg.threshold,

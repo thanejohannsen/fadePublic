@@ -307,16 +307,38 @@ def store_splits(
 
 
 def store_results(conn, games: list[GameSplits], recorded_at: datetime | None = None) -> int:
-    """Record the final score of every game that has one.
+    """Record the score of every completed game, and retract it for the rest.
+
+    One invariant, enforced in both directions on every run: **a game that is not
+    complete has no result.** Writing only was not enough. An earlier version of
+    `final` treated a live boxscore as a final score, so rows were written for
+    games still being played, and because this function only ever added, those rows
+    survived the fix to `final` and kept being graded -- the published record
+    carried a win on a game that was still in its third quarter.
+
+    So a game the feed does not call complete has its row deleted rather than
+    merely skipped. That makes the record self-correcting instead of needing
+    somebody to notice and edit the archive: the next run clears a bad row out of
+    the database, `settle` stops grading it, and `save_log` rewrites the committed
+    archive without it.
+
+    Only games in this payload are touched, which is what keeps the deletion safe.
+    A completed game from an earlier week is not in the feed's response at all, so
+    its result is never a candidate; and a current-week score is refetchable, so
+    even a feed glitch reporting a finished game as scheduled costs a row the next
+    run restores. `store_splits` is untouched either way -- the pre-kickoff
+    readings, the one thing that cannot be refetched, are never at risk here.
 
     Without a kickoff there is nothing to match a snapshot against, so those are
     skipped rather than stored under a null key.
     """
     stamp = (recorded_at or datetime.now(UTC)).isoformat(timespec="seconds")
+    known = [g for g in games if g.kickoff_utc is not None]
+
     rows = [
         (g.away, g.home, g.kickoff_utc.isoformat(), g.away_points, g.home_points, stamp)
-        for g in games
-        if g.final and g.kickoff_utc is not None
+        for g in known
+        if g.final
     ]
     conn.executemany(
         """INSERT OR REPLACE INTO game_results
@@ -324,5 +346,27 @@ def store_results(conn, games: list[GameSplits], recorded_at: datetime | None = 
            VALUES (?, ?, ?, ?, ?, ?)""",
         rows,
     )
+
+    retracted = 0
+    for g in known:
+        if g.final:
+            continue
+        cur = conn.execute(
+            "DELETE FROM game_results WHERE away = ? AND home = ? AND kickoff_utc = ?",
+            (g.away, g.home, g.kickoff_utc.isoformat()),
+        )
+        if cur.rowcount:
+            retracted += cur.rowcount
+            # Not routine. Worth a line in the run output, both the first time this
+            # clears the backlog and if it ever starts happening regularly.
+            log.warning(
+                "%s @ %s is %s, not complete: retracting the %s result already "
+                "recorded for it",
+                g.away, g.home, g.status or "unknown",
+                f"{g.away_points}-{g.home_points}" if g.away_points is not None else "stored",
+            )
+
     conn.commit()
+    if retracted:
+        log.warning("Retracted %d result(s) for games that are not complete", retracted)
     return len(rows)
