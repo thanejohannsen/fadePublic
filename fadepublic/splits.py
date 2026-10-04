@@ -70,6 +70,20 @@ MARKETS = ("spread", "total", "moneyline")
 # Sides that oppose each other, so a fade can find its counterpart.
 OPPOSITE = {"home": "away", "away": "home", "over": "under", "under": "over"}
 
+# The feed's own word for a game that is over. An allowlist of the one finished
+# value, deliberately, rather than a denylist of the live ones: `started` below is
+# a denylist and that is exactly the shape that let an in-progress score be graded
+# as a final. An allowlist fails closed -- an unrecognised status withholds a score
+# for a run instead of recording the wrong one for good.
+COMPLETE_STATUS = "complete"
+
+# Not under way yet. "" is the defensive default when the key is missing.
+NOT_STARTED_STATUSES = ("scheduled", "pre", "")
+
+# Live states this feed is known to report. Only used to decide whether an unknown
+# status is worth a warning, never to decide what counts as finished.
+KNOWN_LIVE_STATUSES = ("inprogress",)
+
 
 @dataclass(frozen=True)
 class Side:
@@ -91,8 +105,9 @@ class GameSplits:
     status: str
     num_bets: int
     sides: dict[tuple[str, str], Side] = field(default_factory=dict)
-    # Final score, once there is one. The same payload carries the boxscore, so
-    # grading a fade needs no second source.
+    # The score so far. The same payload carries the boxscore, so grading a fade
+    # needs no second source -- but these are *running* totals, not a final-only
+    # field, so a game being played right now carries them too. Read `final`.
     away_points: int | None = None
     home_points: int | None = None
 
@@ -102,11 +117,25 @@ class GameSplits:
 
     @property
     def started(self) -> bool:
-        return self.status not in ("scheduled", "pre", "")
+        return self.status not in NOT_STARTED_STATUSES
 
     @property
     def final(self) -> bool:
-        return self.away_points is not None and self.home_points is not None
+        """Whether the game is over -- not merely whether it has a score.
+
+        This used to test only that both point values were present, which is true
+        from the first score of the first quarter. The feed served IND @ WAS at
+        10-6 while it was being played; that went into the record as a settled bet
+        and the published tally moved on it. The status was on this same object the
+        whole time, two lines above the points in the constructor.
+
+        So: the status decides, and the points are only a sanity check on it.
+        """
+        return (
+            self.status == COMPLETE_STATUS
+            and self.away_points is not None
+            and self.home_points is not None
+        )
 
     def opposite(self, side: Side) -> Side | None:
         return self.sides.get((side.market, OPPOSITE.get(side.side, "")))
@@ -159,12 +188,30 @@ def parse_games(payload: dict) -> list[GameSplits]:
                     )
 
         box = game.get("boxscore") or {}
+        status = str(game.get("status") or "")
+
+        # Grading keys off one exact string, so a rename upstream would quietly
+        # stop the record growing rather than announce itself. Anything carrying a
+        # score under a status this module does not recognise is said out loud --
+        # the run still refuses to grade it, which is the safe half of the trade.
+        if box.get("total_away_points") is not None and status not in (
+            COMPLETE_STATUS,
+            *NOT_STARTED_STATUSES,
+            *KNOWN_LIVE_STATUSES,
+        ):
+            log.warning(
+                "%s @ %s carries a score under unrecognised status %r; "
+                "not treating it as final. If the feed renamed %r, this module "
+                "needs updating or the record will stop growing.",
+                away, home, status, COMPLETE_STATUS,
+            )
+
         out.append(
             GameSplits(
                 away=away,
                 home=home,
                 kickoff_utc=_parse_kickoff(game.get("start_time")),
-                status=str(game.get("status") or ""),
+                status=status,
                 num_bets=int(game.get("num_bets") or 0),
                 sides=sides,
                 away_points=box.get("total_away_points"),

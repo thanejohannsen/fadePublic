@@ -447,3 +447,47 @@ def test_the_archive_is_never_shrunk_by_a_narrower_grading_cap():
 
         kept = json.loads(log.read_text())["games"]
         assert len(kept) == 1, "the reading survives a cap that cannot grade it"
+
+
+# ------------------------------------------- a game still being played is not a bet
+
+
+def test_a_game_still_being_played_is_never_graded():
+    """The end-to-end form of the bug, at the level that actually published it.
+
+    A qualifying pre-kickoff reading plus a live score was enough to put a game in
+    the record: IND @ WAS was graded at 10-6 while it was being played, and the
+    tally moved on it. The reading is legitimate and stays; what must not happen is
+    a verdict while the game can still change.
+    """
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _snapshot(c, KICK - timedelta(minutes=30), home_tickets=90)
+    # The live boxscore, written the way store_results would have written it.
+    store_results(
+        c,
+        [
+            GameSplits(
+                away="AAA", home="BBB", kickoff_utc=KICK, status="inprogress",
+                num_bets=5000, away_points=10, home_points=6,
+            )
+        ],
+    )
+
+    assert settle(c) == [], "no verdict while the game is still in play"
+    assert c.execute(
+        "SELECT COUNT(*) FROM betting_splits"
+    ).fetchone()[0] > 0, "the pre-kickoff reading is still kept"
+
+
+def test_the_same_game_grades_once_it_is_over():
+    """The other side of it: the reading taken before kickoff is still the one that
+    decides, and the bet grades normally the moment a real final arrives."""
+    c = sqlite3.connect(":memory:")
+    init_db(c)
+    _snapshot(c, KICK - timedelta(minutes=30), home_tickets=90)
+    _result(c, 30, 13)
+
+    (s,) = settle(c)
+    assert s.score == "30-13"
+    assert s.observed_at == KICK - timedelta(minutes=30), "the pre-kickoff reading"
