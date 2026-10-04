@@ -3184,6 +3184,71 @@
      "tickets": 28
     }
    ]
+  },
+  {
+   "away": "IND",
+   "away_points": 10,
+   "home": "WAS",
+   "home_points": 6,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-04T13:30:00+00:00",
+   "observed_at": "2026-10-04T08:26:00+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 82,
+     "num_bets": 55742,
+     "odds": -220,
+     "side": "away",
+     "tickets": 74
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 18,
+     "num_bets": 55742,
+     "odds": 180,
+     "side": "home",
+     "tickets": 26
+    },
+    {
+     "line": -4.5,
+     "market": "spread",
+     "money": 57,
+     "num_bets": 55742,
+     "odds": -109,
+     "side": "away",
+     "tickets": 39
+    },
+    {
+     "line": 4.5,
+     "market": "spread",
+     "money": 43,
+     "num_bets": 55742,
+     "odds": -110,
+     "side": "home",
+     "tickets": 61
+    },
+    {
+     "line": 46.5,
+     "market": "total",
+     "money": 9,
+     "num_bets": 55742,
+     "odds": -110,
+     "side": "over",
+     "tickets": 9
+    },
+    {
+     "line": 46.5,
+     "market": "total",
+     "money": 91,
+     "num_bets": 55742,
+     "odds": -110,
+     "side": "under",
+     "tickets": 91
+    }
+   ]
   }
  ],
  "version": 1
