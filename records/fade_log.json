@@ -4032,9 +4032,9 @@
   },
   {
    "away": "DET",
-   "away_points": null,
+   "away_points": 26,
    "home": "CAR",
-   "home_points": null,
+   "home_points": 32,
    "is_final": 0,
    "kickoff_utc": "2026-10-05T00:20:00+00:00",
    "observed_at": "2026-10-04T23:08:40+00:00",
