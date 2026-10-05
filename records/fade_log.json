@@ -3837,9 +3837,9 @@
   },
   {
    "away": "DEN",
-   "away_points": null,
+   "away_points": 14,
    "home": "SF",
-   "home_points": null,
+   "home_points": 24,
    "is_final": 0,
    "kickoff_utc": "2026-10-04T20:25:00+00:00",
    "observed_at": "2026-10-04T19:44:16+00:00",
@@ -3902,9 +3902,9 @@
   },
   {
    "away": "KC",
-   "away_points": null,
+   "away_points": 30,
    "home": "LV",
-   "home_points": null,
+   "home_points": 27,
    "is_final": 0,
    "kickoff_utc": "2026-10-04T20:25:00+00:00",
    "observed_at": "2026-10-04T19:44:16+00:00",
@@ -3967,9 +3967,9 @@
   },
   {
    "away": "LAC",
-   "away_points": null,
+   "away_points": 23,
    "home": "SEA",
-   "home_points": null,
+   "home_points": 30,
    "is_final": 0,
    "kickoff_utc": "2026-10-04T20:25:00+00:00",
    "observed_at": "2026-10-04T19:44:16+00:00",
@@ -4027,6 +4027,71 @@
      "odds": -106,
      "side": "under",
      "tickets": 41
+    }
+   ]
+  },
+  {
+   "away": "DET",
+   "away_points": null,
+   "home": "CAR",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-05T00:20:00+00:00",
+   "observed_at": "2026-10-04T23:08:40+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 93,
+     "num_bets": 118649,
+     "odds": -211,
+     "side": "away",
+     "tickets": 88
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 7,
+     "num_bets": 118649,
+     "odds": 173,
+     "side": "home",
+     "tickets": 12
+    },
+    {
+     "line": -3.5,
+     "market": "spread",
+     "money": 61,
+     "num_bets": 118649,
+     "odds": -118,
+     "side": "away",
+     "tickets": 63
+    },
+    {
+     "line": 3.5,
+     "market": "spread",
+     "money": 39,
+     "num_bets": 118649,
+     "odds": -104,
+     "side": "home",
+     "tickets": 37
+    },
+    {
+     "line": 51.5,
+     "market": "total",
+     "money": 82,
+     "num_bets": 118649,
+     "odds": -110,
+     "side": "over",
+     "tickets": 66
+    },
+    {
+     "line": 51.5,
+     "market": "total",
+     "money": 18,
+     "num_bets": 118649,
+     "odds": -109,
+     "side": "under",
+     "tickets": 34
     }
    ]
   }
