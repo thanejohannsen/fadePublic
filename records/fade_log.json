@@ -4162,9 +4162,9 @@
   },
   {
    "away": "TB",
-   "away_points": null,
+   "away_points": 24,
    "home": "DAL",
-   "home_points": null,
+   "home_points": 16,
    "is_final": 0,
    "kickoff_utc": "2026-10-09T00:15:00+00:00",
    "observed_at": "2026-10-08T19:56:40+00:00",
