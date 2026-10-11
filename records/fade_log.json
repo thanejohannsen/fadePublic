@@ -4292,9 +4292,9 @@
   },
   {
    "away": "CHI",
-   "away_points": null,
+   "away_points": 7,
    "home": "GB",
-   "home_points": null,
+   "home_points": 31,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T17:00:00+00:00",
    "observed_at": "2026-10-11T16:13:02+00:00",
@@ -4357,9 +4357,9 @@
   },
   {
    "away": "CIN",
-   "away_points": null,
+   "away_points": 31,
    "home": "MIA",
-   "home_points": null,
+   "home_points": 24,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T17:00:00+00:00",
    "observed_at": "2026-10-11T16:13:02+00:00",
@@ -4422,9 +4422,9 @@
   },
   {
    "away": "CLE",
-   "away_points": null,
+   "away_points": 12,
    "home": "NYJ",
-   "home_points": null,
+   "home_points": 17,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T17:00:00+00:00",
    "observed_at": "2026-10-11T16:13:02+00:00",
@@ -4487,9 +4487,9 @@
   },
   {
    "away": "HOU",
-   "away_points": null,
+   "away_points": 26,
    "home": "TEN",
-   "home_points": null,
+   "home_points": 3,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T17:00:00+00:00",
    "observed_at": "2026-10-11T16:13:02+00:00",
@@ -4552,9 +4552,9 @@
   },
   {
    "away": "IND",
-   "away_points": null,
+   "away_points": 22,
    "home": "PIT",
-   "home_points": null,
+   "home_points": 34,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T17:00:00+00:00",
    "observed_at": "2026-10-11T16:13:02+00:00",
@@ -4617,9 +4617,9 @@
   },
   {
    "away": "LV",
-   "away_points": null,
+   "away_points": 17,
    "home": "NE",
-   "home_points": null,
+   "home_points": 45,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T17:00:00+00:00",
    "observed_at": "2026-10-11T16:13:02+00:00",
@@ -4682,9 +4682,9 @@
   },
   {
    "away": "MIN",
-   "away_points": null,
+   "away_points": 23,
    "home": "NO",
-   "home_points": null,
+   "home_points": 13,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T17:00:00+00:00",
    "observed_at": "2026-10-11T16:13:02+00:00",
@@ -4807,6 +4807,71 @@
      "odds": -110,
      "side": "under",
      "tickets": 21
+    }
+   ]
+  },
+  {
+   "away": "DEN",
+   "away_points": null,
+   "home": "LAC",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-11T20:05:00+00:00",
+   "observed_at": "2026-10-11T18:53:36+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 77,
+     "num_bets": 55530,
+     "odds": -194,
+     "side": "away",
+     "tickets": 84
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 23,
+     "num_bets": 55530,
+     "odds": 158,
+     "side": "home",
+     "tickets": 16
+    },
+    {
+     "line": -3.5,
+     "market": "spread",
+     "money": 51,
+     "num_bets": 55530,
+     "odds": -110,
+     "side": "away",
+     "tickets": 53
+    },
+    {
+     "line": 3.5,
+     "market": "spread",
+     "money": 49,
+     "num_bets": 55530,
+     "odds": -110,
+     "side": "home",
+     "tickets": 47
+    },
+    {
+     "line": 42.5,
+     "market": "total",
+     "money": 52,
+     "num_bets": 55530,
+     "odds": -107,
+     "side": "over",
+     "tickets": 71
+    },
+    {
+     "line": 42.5,
+     "market": "total",
+     "money": 48,
+     "num_bets": 55530,
+     "odds": -112,
+     "side": "under",
+     "tickets": 29
     }
    ]
   }
