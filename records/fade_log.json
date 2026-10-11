@@ -4747,9 +4747,9 @@
   },
   {
    "away": "NYG",
-   "away_points": null,
+   "away_points": 27,
    "home": "WAS",
-   "home_points": null,
+   "home_points": 27,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T17:00:00+00:00",
    "observed_at": "2026-10-11T16:13:02+00:00",
@@ -4812,9 +4812,9 @@
   },
   {
    "away": "DEN",
-   "away_points": null,
+   "away_points": 23,
    "home": "LAC",
-   "home_points": null,
+   "home_points": 17,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T20:05:00+00:00",
    "observed_at": "2026-10-11T18:53:36+00:00",
@@ -4872,6 +4872,136 @@
      "odds": -112,
      "side": "under",
      "tickets": 29
+    }
+   ]
+  },
+  {
+   "away": "DET",
+   "away_points": 45,
+   "home": "ARI",
+   "home_points": 21,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-11T20:25:00+00:00",
+   "observed_at": "2026-10-11T20:18:39+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 98,
+     "num_bets": 120376,
+     "odds": -250,
+     "side": "away",
+     "tickets": 94
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 2,
+     "num_bets": 120376,
+     "odds": 202,
+     "side": "home",
+     "tickets": 6
+    },
+    {
+     "line": -5.5,
+     "market": "spread",
+     "money": 78,
+     "num_bets": 120376,
+     "odds": -109,
+     "side": "away",
+     "tickets": 56
+    },
+    {
+     "line": 5.5,
+     "market": "spread",
+     "money": 22,
+     "num_bets": 120376,
+     "odds": -110,
+     "side": "home",
+     "tickets": 44
+    },
+    {
+     "line": 55.0,
+     "market": "total",
+     "money": 82,
+     "num_bets": 120376,
+     "odds": -110,
+     "side": "over",
+     "tickets": 71
+    },
+    {
+     "line": 55.0,
+     "market": "total",
+     "money": 18,
+     "num_bets": 120376,
+     "odds": -112,
+     "side": "under",
+     "tickets": 29
+    }
+   ]
+  },
+  {
+   "away": "SF",
+   "away_points": null,
+   "home": "SEA",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-11T20:25:00+00:00",
+   "observed_at": "2026-10-11T20:18:39+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 52,
+     "num_bets": 101246,
+     "odds": 137,
+     "side": "away",
+     "tickets": 51
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 48,
+     "num_bets": 101246,
+     "odds": -165,
+     "side": "home",
+     "tickets": 49
+    },
+    {
+     "line": 3.0,
+     "market": "spread",
+     "money": 79,
+     "num_bets": 101246,
+     "odds": -112,
+     "side": "away",
+     "tickets": 78
+    },
+    {
+     "line": -3.0,
+     "market": "spread",
+     "money": 21,
+     "num_bets": 101246,
+     "odds": -105,
+     "side": "home",
+     "tickets": 22
+    },
+    {
+     "line": 47.0,
+     "market": "total",
+     "money": 80,
+     "num_bets": 101246,
+     "odds": -111,
+     "side": "over",
+     "tickets": 79
+    },
+    {
+     "line": 47.0,
+     "market": "total",
+     "money": 20,
+     "num_bets": 101246,
+     "odds": -112,
+     "side": "under",
+     "tickets": 21
     }
    ]
   }
