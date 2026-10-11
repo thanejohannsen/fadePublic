@@ -4942,9 +4942,9 @@
   },
   {
    "away": "SF",
-   "away_points": null,
+   "away_points": 32,
    "home": "SEA",
-   "home_points": null,
+   "home_points": 29,
    "is_final": 0,
    "kickoff_utc": "2026-10-11T20:25:00+00:00",
    "observed_at": "2026-10-11T20:18:39+00:00",
