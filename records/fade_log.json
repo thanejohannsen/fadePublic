@@ -5004,6 +5004,71 @@
      "tickets": 21
     }
    ]
+  },
+  {
+   "away": "BAL",
+   "away_points": null,
+   "home": "ATL",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-12T00:20:00+00:00",
+   "observed_at": "2026-10-11T23:44:46+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 82,
+     "num_bets": 103533,
+     "odds": 145,
+     "side": "away",
+     "tickets": 37
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 18,
+     "num_bets": 103533,
+     "odds": -173,
+     "side": "home",
+     "tickets": 63
+    },
+    {
+     "line": 3.5,
+     "market": "spread",
+     "money": 56,
+     "num_bets": 103533,
+     "odds": -113,
+     "side": "away",
+     "tickets": 54
+    },
+    {
+     "line": -3.5,
+     "market": "spread",
+     "money": 44,
+     "num_bets": 103533,
+     "odds": -107,
+     "side": "home",
+     "tickets": 46
+    },
+    {
+     "line": 44.0,
+     "market": "total",
+     "money": 78,
+     "num_bets": 103533,
+     "odds": -112,
+     "side": "over",
+     "tickets": 78
+    },
+    {
+     "line": 44.0,
+     "market": "total",
+     "money": 22,
+     "num_bets": 103533,
+     "odds": -107,
+     "side": "under",
+     "tickets": 22
+    }
+   ]
   }
  ],
  "version": 1
