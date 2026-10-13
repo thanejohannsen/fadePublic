@@ -5069,6 +5069,71 @@
      "tickets": 22
     }
    ]
+  },
+  {
+   "away": "BUF",
+   "away_points": null,
+   "home": "LA",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-13T00:15:00+00:00",
+   "observed_at": "2026-10-12T22:57:54+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 68,
+     "num_bets": 174114,
+     "odds": 150,
+     "side": "away",
+     "tickets": 49
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 32,
+     "num_bets": 174114,
+     "odds": -179,
+     "side": "home",
+     "tickets": 51
+    },
+    {
+     "line": 3.5,
+     "market": "spread",
+     "money": 75,
+     "num_bets": 174114,
+     "odds": -115,
+     "side": "away",
+     "tickets": 77
+    },
+    {
+     "line": -3.5,
+     "market": "spread",
+     "money": 25,
+     "num_bets": 174114,
+     "odds": -105,
+     "side": "home",
+     "tickets": 23
+    },
+    {
+     "line": 55.5,
+     "market": "total",
+     "money": 87,
+     "num_bets": 174114,
+     "odds": -108,
+     "side": "over",
+     "tickets": 85
+    },
+    {
+     "line": 55.5,
+     "market": "total",
+     "money": 13,
+     "num_bets": 174114,
+     "odds": -112,
+     "side": "under",
+     "tickets": 15
+    }
+   ]
   }
  ],
  "version": 1
