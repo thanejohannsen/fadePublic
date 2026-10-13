@@ -5072,9 +5072,9 @@
   },
   {
    "away": "BUF",
-   "away_points": null,
+   "away_points": 37,
    "home": "LA",
-   "home_points": null,
+   "home_points": 34,
    "is_final": 0,
    "kickoff_utc": "2026-10-13T00:15:00+00:00",
    "observed_at": "2026-10-12T22:57:54+00:00",
