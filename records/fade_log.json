@@ -5134,6 +5134,71 @@
      "tickets": 15
     }
    ]
+  },
+  {
+   "away": "SEA",
+   "away_points": null,
+   "home": "DEN",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-16T00:15:00+00:00",
+   "observed_at": "2026-10-16T00:14:33+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 79,
+     "num_bets": 212439,
+     "odds": -153,
+     "side": "away",
+     "tickets": 78
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 21,
+     "num_bets": 212439,
+     "odds": 126,
+     "side": "home",
+     "tickets": 22
+    },
+    {
+     "line": -2.5,
+     "market": "spread",
+     "money": 62,
+     "num_bets": 212439,
+     "odds": -116,
+     "side": "away",
+     "tickets": 59
+    },
+    {
+     "line": 2.5,
+     "market": "spread",
+     "money": 38,
+     "num_bets": 212439,
+     "odds": -104,
+     "side": "home",
+     "tickets": 41
+    },
+    {
+     "line": 40.5,
+     "market": "total",
+     "money": 76,
+     "num_bets": 212439,
+     "odds": -112,
+     "side": "over",
+     "tickets": 82
+    },
+    {
+     "line": 40.5,
+     "market": "total",
+     "money": 24,
+     "num_bets": 212439,
+     "odds": -108,
+     "side": "under",
+     "tickets": 18
+    }
+   ]
   }
  ],
  "version": 1
