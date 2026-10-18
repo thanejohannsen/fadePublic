@@ -5202,9 +5202,9 @@
   },
   {
    "away": "HOU",
-   "away_points": null,
+   "away_points": 34,
    "home": "JAC",
-   "home_points": null,
+   "home_points": 31,
    "is_final": 0,
    "kickoff_utc": "2026-10-18T13:30:00+00:00",
    "observed_at": "2026-10-18T11:02:09+00:00",
