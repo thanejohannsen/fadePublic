@@ -5917,9 +5917,9 @@
   },
   {
    "away": "DAL",
-   "away_points": null,
+   "away_points": 13,
    "home": "GB",
-   "home_points": null,
+   "home_points": 23,
    "is_final": 0,
    "kickoff_utc": "2026-10-19T00:20:00+00:00",
    "observed_at": "2026-10-18T23:38:19+00:00",
