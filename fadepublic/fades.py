@@ -30,6 +30,7 @@ fixed in advance, which is the only way the question gets answered.
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
@@ -39,6 +40,16 @@ from .splits import GameSplits, Side
 FADEABLE_MARKETS = ("spread", "total")
 
 DEFAULT_THRESHOLD = 80
+
+# A threshold is either one number for every market, or one per market. The
+# second form exists because the two markets stopped deserving the same cut: the
+# NFL spread arm was measured at 19-5 over weeks 1-6 at 80%, and the 70-79% band
+# beneath it at 12-3, while totals showed nothing below 80%. Spreads therefore
+# fire at 70 and totals at 80.
+#
+# A market absent from the mapping is not looked at, which is how the watch band
+# is made totals-only: it names `total` and says nothing about `spread`.
+Threshold = int | Mapping[str, int]
 
 # The lower bound of the watch band: shown on the page, never graded. Lives here
 # beside the threshold it is paired with so the two cannot drift apart, even though
@@ -121,9 +132,23 @@ class Fade:
         return f"{name} {side.line:+g}"
 
 
+def limits(threshold: Threshold, markets: tuple[str, ...]) -> dict[str, int]:
+    """Per-market cuts, whichever form the caller used.
+
+    A plain int applies to every market in ``markets``. A mapping is filtered by
+    ``markets`` and keeps only what it names, so a partial mapping silently
+    excludes the markets it omits -- which is the behaviour the watch band wants
+    and the reason this is a named function rather than a dict comprehension
+    inlined at each call site.
+    """
+    if isinstance(threshold, Mapping):
+        return {m: int(threshold[m]) for m in markets if m in threshold}
+    return {m: int(threshold) for m in markets}
+
+
 def find_fades(
     games: list[GameSplits],
-    threshold: int = DEFAULT_THRESHOLD,
+    threshold: Threshold = DEFAULT_THRESHOLD,
     now: datetime | None = None,
     markets: tuple[str, ...] = FADEABLE_MARKETS,
 ) -> list[Fade]:
@@ -138,6 +163,7 @@ def find_fades(
     take.
     """
     now = now or datetime.now(UTC)
+    cuts = limits(threshold, markets)
     out: list[Fade] = []
     for game in games:
         if game.started:
@@ -145,7 +171,8 @@ def find_fades(
         if game.kickoff_utc is not None and game.kickoff_utc <= now:
             continue
         for (market, _side), public in game.sides.items():
-            if market not in markets or public.tickets < threshold:
+            cut = cuts.get(market)
+            if cut is None or public.tickets < cut:
                 continue
             bet = game.opposite(public)
             if bet is None:

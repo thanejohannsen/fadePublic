@@ -8,14 +8,37 @@
 season = 2026
 
 [fades]
-threshold = 80
-# A second, lower band: shown on the page under "Watching", never graded and never
-# in the record. The 80% cut is a cliff -- a game at 79% is not meaningfully
-# different evidence from one at 81% -- but moving the cut would change what the
-# record measures, so the near misses are displayed instead of counted. Must be
-# below `threshold`; the band is the gap between the two.
-watch_threshold = 70
 markets = ["spread", "total"]
+
+# The share of *tickets* that makes a side "the public", per market. The two
+# stopped sharing a cut once they were measured apart over NFL weeks 1-6:
+#
+#   spreads  >=80%        19-5       and the 70-79% band beneath it   12-3-2
+#   totals   >=80%        12-3       and nothing below 80% worth having
+#
+# So spreads fire at 70 and totals hold at 80. Both arms ran at 79% either way;
+# the lower spread cut buys volume rather than accuracy, which is what makes the
+# forward record settle sooner.
+#
+# Worth saying plainly: this cut was chosen after seeing what it would have
+# returned, which is the same move that produced the original 16-4. The 12-3-2
+# band is fifteen decisions and well inside what noise produces, and the college
+# board found nothing at all at 72% over 350 bets. Lowering it is a bet that the
+# NFL spread arm is real, not a demonstration that it is.
+[fades.threshold]
+spread = 70
+total = 80
+
+# A second, lower band: shown on the page under "Watching", never graded and never
+# in the record. A cut is a cliff -- a game at 79% is not meaningfully different
+# evidence from one at 81% -- but moving a cut changes what the record measures,
+# so near misses are displayed instead of counted.
+#
+# Totals only. Spreads now fire at 70 and have nothing left beneath them worth a
+# section; naming `spread` here would describe a band that can never have rows.
+# Each entry must sit below that market's threshold -- the band is the gap.
+[fades.watch_threshold]
+total = 70
 
 # A bet is decided by the last reading at or before kickoff. Inside this many hours
 # of kickoff it is *confirmed*; outside, it is still graded but the page prints how

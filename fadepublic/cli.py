@@ -34,10 +34,13 @@ def cmd_refresh(args: argparse.Namespace) -> int:
             # tables. The watch band is the gap between the two thresholds, so a
             # game cannot appear in both.
             qualifying = find_fades(
-                games, threshold=cfg.watch_threshold, now=now, markets=cfg.markets
+                games, threshold=cfg.floor(), now=now, markets=cfg.markets
             )
-            fades = [f for f in qualifying if f.public.tickets >= cfg.threshold]
-            watch = [f for f in qualifying if f.public.tickets < cfg.threshold]
+            # Partitioned per market, because the two no longer share a cut: a
+            # spread at 72% is on the board while a total at 72% is only watched.
+            counted = cfg.counted()
+            fades = [f for f in qualifying if f.public.tickets >= counted[f.market]]
+            watch = [f for f in qualifying if f.public.tickets < counted[f.market]]
         else:
             # The feed is undocumented and not ours. An outage should empty the
             # board for one run, not take the record down with it.
@@ -54,11 +57,11 @@ def cmd_refresh(args: argparse.Namespace) -> int:
         # game_results, so the upsert half does not care about the order.
         if games:
             store_results(conn, games)
-        # The record is graded at cfg.threshold, never at cfg.watch_threshold, so
+        # The record is graded at the counted cuts, never at the watch floors, so
         # the watch band is structurally incapable of entering it.
         settled = settle(
             conn,
-            threshold=cfg.threshold,
+            threshold=cfg.counted(),
             markets=cfg.markets,
             lock_lead=timedelta(hours=cfg.lock_lead_hours),
             max_staleness=timedelta(hours=cfg.max_staleness_hours),
@@ -72,11 +75,11 @@ def cmd_refresh(args: argparse.Namespace) -> int:
     target.write_text(
         render_page(
             fades,
-            cfg.threshold,
+            cfg.counted(),
             settled,
             now,
             watch=watch,
-            watch_threshold=cfg.watch_threshold,
+            watch_threshold=cfg.watched(),
             lock_lead=timedelta(hours=cfg.lock_lead_hours),
             max_staleness=timedelta(hours=cfg.max_staleness_hours),
         ),
@@ -85,8 +88,12 @@ def cmd_refresh(args: argparse.Namespace) -> int:
 
     r = tally(settled)
     print(f"Page written to {target}")
-    print(f"Board: {len(fades)} qualifying at {cfg.threshold}% of tickets")
-    print(f"Watching: {len(watch)} between {cfg.watch_threshold}% and {cfg.threshold}%")
+    cuts = ", ".join(f"{m} {c}%" for m, c in sorted(cfg.counted().items()))
+    bands = ", ".join(
+        f"{m} {low}-{cfg.counted()[m] - 1}%" for m, low in sorted(cfg.watched().items())
+    )
+    print(f"Board: {len(fades)} qualifying at {cuts} of tickets")
+    print(f"Watching: {len(watch)} in {bands}" if bands else "Watching: no band configured")
     print(f"Record: {r.label} over {len(settled)} settled bets", end="")
     print(f" ({r.outside_lock} outside the lock window)" if r.outside_lock else "")
     return 0
@@ -126,7 +133,7 @@ def cmd_backfill(args: argparse.Namespace) -> int:
             store_results(conn, fetched)
         settled = settle(
             conn,
-            threshold=cfg.threshold,
+            threshold=cfg.counted(),
             markets=cfg.markets,
             lock_lead=timedelta(hours=cfg.lock_lead_hours),
             max_staleness=timedelta(hours=cfg.max_staleness_hours),

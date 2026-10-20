@@ -1,7 +1,7 @@
 # Fade the public
 
-NFL games where **80% or more of the bet tickets** sit on one side of a spread
-or total, with the other side named. A static page, rebuilt on a schedule and
+NFL games where a lopsided share of the **bet tickets** sits on one side of a
+spread or total, with the other side named — 70% on spreads, 80% on totals. A static page, rebuilt on a schedule and
 published to GitHub Pages.
 
 Tickets, not handle: a headcount, where a five-dollar parlay leg weighs the same
@@ -10,12 +10,17 @@ is printed beside the ticket share and left for the reader to interpret.
 
 ## The rule
 
-- **Spreads and totals only**, at 80% of tickets.
-- **A second band at 70% is displayed and never recorded.** The 80% cut is a
-  cliff — a game at 79% is not meaningfully different evidence from one at 81% —
-  but moving the cut would change what the record measures, and widening it would
-  re-grade every past week. So the near misses sit in their own section under
-  *Watching*, and the record is computed at 80 and never sees them.
+- **Spreads and totals only**, and no longer at the same cut: **spreads fire at
+  70% of tickets, totals at 80%.** The two were measured apart over NFL weeks
+  1-6 — spreads went 19-5 at 80% with the 70-79% band beneath them at 12-3-2,
+  while totals showed nothing worth having below 80%. Both spread bands hit at
+  79%, so the lower cut buys volume rather than accuracy, which is what makes
+  the forward record settle sooner.
+- **A watch band at 70% on totals is displayed and never recorded.** A cut is a
+  cliff — a total at 79% is not meaningfully different evidence from one at 81%
+  — but moving a cut changes what the record measures. So those near misses sit
+  under *Watching*, and the record never sees them. Spreads have no band left
+  beneath them now that they fire at 70.
 - **Moneylines are excluded.** They reach any threshold almost automatically,
   because everyone takes the big favourite for a small payout, so the threshold
   stops discriminating. Over three weeks the rule fired on 35 moneylines at a
@@ -81,12 +86,19 @@ eviction can cost at most one refresh interval.
 
 ## What this is not
 
-**It is a log, not a claim of edge.** The record opened at 16-4 over 2026 weeks
-1-3, which is twenty bets: the 95% interval runs roughly 54% to 88% against a
-52.4% break-even, so the lower bound clears the hurdle only barely. Worse, the
-rule was found on the very weeks it is scored against — the ordinary way a
-number like this appears and then evaporates. The forward record is the only
-thing that will settle it.
+**It is a log, not a claim of edge**, and the spread cut makes that warning
+sharper rather than softer. The record opened at 16-4 over weeks 1-3 and stands
+at 32-10-2 under the current cuts, a 95% interval of roughly 59% to 84% against
+a 52.4% break-even. The lower bound clears the hurdle — but the 70% spread cut
+was **chosen after seeing what it would have returned**, which is precisely the
+move that produced the original 16-4. The band that justified it is fifteen
+decisions, well inside what noise produces.
+
+The strongest evidence against reading too much into any of it is the college
+board: the same rule, the same feed, the same parser, measured at **50% over 214
+decisions**. A sample ten times larger than the NFL one, showing nothing. Either
+the two sports genuinely differ, or the NFL number is variance that has not
+finished reverting. Only the forward record will say which.
 
 Weeks 1-3 were seeded with `fade backfill`, and those rows are graded from each
 game's **closing** ticket count, because a finished week is all the feed still

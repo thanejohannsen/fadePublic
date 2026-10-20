@@ -19,8 +19,11 @@ def test_the_real_config_round_trips_its_new_keys():
     asserting against rather than a fixture."""
     cfg = load_config(pathlib.Path(__file__).parent.parent / "config.toml")
 
-    assert cfg.threshold == 80
-    assert cfg.watch_threshold == 70
+    # Spreads fire at 70, totals hold at 80, and only totals have a band beneath.
+    assert cfg.counted() == {"spread": 70, "total": 80}
+    assert cfg.watched() == {"total": 70}
+    # One pass at the floor feeds both tables, so it is the lower of the two.
+    assert cfg.floor() == {"spread": 70, "total": 70}
     assert cfg.lock_lead_hours == 2
     assert cfg.max_staleness_hours == 12
 
@@ -37,10 +40,13 @@ def test_a_missing_file_is_still_a_valid_config():
 def test_a_watch_band_that_is_not_below_the_threshold_is_refused():
     """The band is the gap between the two numbers. Equal or inverted bounds make it
     empty, and an empty band renders as no section at all rather than an error."""
-    with pytest.raises(ValueError, match="watch_threshold"):
+    with pytest.raises(ValueError, match="watch threshold"):
         Config(threshold=80, watch_threshold=80)
-    with pytest.raises(ValueError, match="watch_threshold"):
+    with pytest.raises(ValueError, match="watch threshold"):
         Config(threshold=80, watch_threshold=85)
+    # Per-market spellings get the same guard, named by market.
+    with pytest.raises(ValueError, match="'total'"):
+        Config(threshold={"spread": 70, "total": 80}, watch_threshold={"total": 80})
 
 
 def test_a_staleness_cap_inside_the_lock_window_is_refused():

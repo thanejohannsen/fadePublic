@@ -254,3 +254,44 @@ def test_a_side_with_no_line_is_still_named():
 
     assert fade.public_label == "AAA"
     assert fade.line_label == "BBB"
+
+
+# -------------------------------------------- one cut per market
+
+
+def test_a_market_can_have_its_own_cut():
+    """Spreads fire at 70 and totals at 80. The two arms were measured apart over
+    NFL weeks 1-6 -- spreads 19-5 at 80% with 12-3-2 in the band beneath, totals
+    showing nothing under 80% -- so they stopped sharing a number."""
+    g = game([
+        side("spread", "home", 72, money=70, line=-3.5),
+        side("spread", "away", 28, money=30, line=3.5),
+        side("total", "over", 72, money=70, line=47.5),
+        side("total", "under", 28, money=30, line=47.5),
+    ])
+    cuts = {"spread": 70, "total": 80}
+    picked = find_fades([g], threshold=cuts, now=NOW)
+
+    assert [f.market for f in picked] == ["spread"], "the total at 72% is short of 80"
+
+
+def test_a_market_absent_from_the_mapping_is_not_looked_at():
+    """How the watch band is made totals-only: it names `total` and says nothing
+    about `spread`, so no spread can ever land in it."""
+    g = game([
+        side("spread", "home", 95, money=90, line=-3.5),
+        side("spread", "away", 5, money=10, line=3.5),
+    ])
+    assert find_fades([g], threshold={"total": 70}, now=NOW) == []
+
+
+def test_a_plain_number_still_applies_to_every_market():
+    """The scalar spelling has to keep working: the college board uses one cut for
+    both markets, and every test written before per-market cuts passes an int."""
+    g = game([
+        side("spread", "home", 85, money=80, line=-3.5),
+        side("spread", "away", 15, money=20, line=3.5),
+        side("total", "over", 85, money=80, line=47.5),
+        side("total", "under", 15, money=20, line=47.5),
+    ])
+    assert len(find_fades([g], threshold=80, now=NOW)) == 2

@@ -203,7 +203,7 @@ def test_the_watch_panel_survives_an_empty_board():
     renders a bare "nothing qualifies" message must still carry the panel."""
     html = render_page([], watch=[_fade(tickets=74)])
 
-    assert "No spread or total is currently carrying 80%" in html
+    assert "No spread or total is currently carrying" in html
     assert "Watching" in html and "74%" in html
     assert "shows under Watching below" in html, "and the two must not contradict"
 

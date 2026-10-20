@@ -291,7 +291,36 @@ def _settled_panel(settled) -> str:
     return f'<div class="panel"><h2>Settled</h2>{table}</div>'
 
 
-def _watch_panel(watch, watch_threshold: int = 70, threshold: int = 80) -> str:
+def _bands(watch_threshold, threshold) -> str:
+    """The watch bands in words, e.g. "totals between 70% and 79%".
+
+    Per market because the two no longer share a cut, and only for markets that
+    have a band at all -- spreads fire at 70 and have nothing left beneath them,
+    so naming one would describe a section that can never have rows.
+    """
+    from .fades import FADEABLE_MARKETS, limits
+
+    counted = limits(threshold, FADEABLE_MARKETS)
+    watched = limits(watch_threshold, FADEABLE_MARKETS)
+    parts = [
+        f"{m}s between {low}% and {counted[m] - 1}%"
+        for m, low in sorted(watched.items())
+        if m in counted and low < counted[m]
+    ]
+    return " and ".join(parts)
+
+
+def _cuts(threshold) -> str:
+    """The firing cuts in words, e.g. "spreads at 70%, totals at 80%"."""
+    from .fades import FADEABLE_MARKETS, limits
+
+    counted = limits(threshold, FADEABLE_MARKETS)
+    if len(set(counted.values())) == 1:
+        return f"at {next(iter(counted.values()))}%"
+    return ", ".join(f"{m}s at {c}%" for m, c in sorted(counted.items()))
+
+
+def _watch_panel(watch, watch_threshold=70, threshold=80) -> str:
     """The near misses: lopsided enough to look at, not enough to record.
 
     A separate panel rather than extra rows on the board, and never graded. The 80%
@@ -312,8 +341,8 @@ def _watch_panel(watch, watch_threshold: int = 70, threshold: int = 80) -> str:
         f'<div class="scroll"><table class="fade">'
         f"<tr><th>Game</th><th>Public is on</th><th>Would be</th></tr>"
         f"{_fade_rows(watch)}</table></div>"
-        f'<p class="note">Between {watch_threshold}% and {threshold - 1}% of '
-        f"tickets on one side -- short of the {threshold}% the rule fires on. "
+        f'<p class="note">{_bands(watch_threshold, threshold).capitalize()} of '
+        f"tickets on one side -- short of the cut the rule fires on. "
         f"<b>Not recorded.</b> These are shown because the cut-off is a cliff and "
         f"the rows just under it are worth seeing, but counting them would change "
         f"what the record above measures.</p></div>"
@@ -321,7 +350,7 @@ def _watch_panel(watch, watch_threshold: int = 70, threshold: int = 80) -> str:
 
 
 def render_board(
-    fades, threshold: int = 80, settled=None, lock_lead=None, max_staleness=None
+    fades, threshold=80, settled=None, lock_lead=None, max_staleness=None
 ) -> str:
     """Games where the tickets are lopsided enough for the rule to fire.
 
@@ -338,11 +367,11 @@ def render_board(
     if not fades:
         return (
             f'<div class="panel">{strip}'
-            f'<p>No spread or total is currently carrying {threshold}% or more of '
+            f'<p>No spread or total is currently carrying enough of '
             f"the tickets on one side.</p>"
             f'<p class="note">The board fills as kickoff approaches, so this is '
             f"usually empty early in the week; anything close but short of "
-            f"{threshold}% shows under Watching below.</p></div>"
+            f"the cut shows under Watching below.</p></div>"
         )
 
     return (
@@ -350,7 +379,7 @@ def render_board(
         f'<div class="scroll"><table class="fade">'
         f"<tr><th>Game</th><th>Public is on</th><th>Bet</th></tr>"
         f"{_fade_rows(fades)}</table></div>"
-        f'<p class="note">Spreads and totals only, at {threshold}% of '
+        f'<p class="note">Spreads and totals only, {_cuts(threshold)} of '
         f"<b>tickets</b> -- a headcount, not money. Moneylines are excluded: they "
         f"reach this threshold almost automatically, because everyone takes the big "
         f"favourite for a small payout.</p>"
@@ -371,11 +400,11 @@ def render_board(
 
 def render_page(
     fades,
-    threshold: int = 80,
+    threshold=80,
     settled=None,
     generated_at=None,
     watch=None,
-    watch_threshold: int = 70,
+    watch_threshold=70,
     lock_lead=None,
     max_staleness=None,
 ) -> str:
