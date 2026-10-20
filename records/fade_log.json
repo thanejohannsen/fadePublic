@@ -5979,6 +5979,71 @@
      "tickets": 26
     }
    ]
+  },
+  {
+   "away": "WAS",
+   "away_points": 17,
+   "home": "SF",
+   "home_points": 23,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-20T00:15:00+00:00",
+   "observed_at": "2026-10-20T00:09:40+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 22,
+     "num_bets": 202165,
+     "odds": 305,
+     "side": "away",
+     "tickets": 5
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 78,
+     "num_bets": 202165,
+     "odds": -395,
+     "side": "home",
+     "tickets": 95
+    },
+    {
+     "line": 7.5,
+     "market": "spread",
+     "money": 32,
+     "num_bets": 202165,
+     "odds": -117,
+     "side": "away",
+     "tickets": 28
+    },
+    {
+     "line": -7.5,
+     "market": "spread",
+     "money": 68,
+     "num_bets": 202165,
+     "odds": -103,
+     "side": "home",
+     "tickets": 72
+    },
+    {
+     "line": 51.5,
+     "market": "total",
+     "money": 83,
+     "num_bets": 202165,
+     "odds": -111,
+     "side": "over",
+     "tickets": 76
+    },
+    {
+     "line": 51.5,
+     "market": "total",
+     "money": 17,
+     "num_bets": 202165,
+     "odds": -108,
+     "side": "under",
+     "tickets": 24
+    }
+   ]
   }
  ],
  "version": 1
