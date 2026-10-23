@@ -6044,6 +6044,71 @@
      "tickets": 24
     }
    ]
+  },
+  {
+   "away": "NE",
+   "away_points": null,
+   "home": "CHI",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-23T00:15:00+00:00",
+   "observed_at": "2026-10-22T21:34:08+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 67,
+     "num_bets": 137355,
+     "odds": 130,
+     "side": "away",
+     "tickets": 41
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 33,
+     "num_bets": 137355,
+     "odds": -158,
+     "side": "home",
+     "tickets": 59
+    },
+    {
+     "line": 3.0,
+     "market": "spread",
+     "money": 64,
+     "num_bets": 137355,
+     "odds": -110,
+     "side": "away",
+     "tickets": 66
+    },
+    {
+     "line": -3.0,
+     "market": "spread",
+     "money": 36,
+     "num_bets": 137355,
+     "odds": -105,
+     "side": "home",
+     "tickets": 34
+    },
+    {
+     "line": 50.5,
+     "market": "total",
+     "money": 53,
+     "num_bets": 137355,
+     "odds": -116,
+     "side": "over",
+     "tickets": 46
+    },
+    {
+     "line": 50.5,
+     "market": "total",
+     "money": 47,
+     "num_bets": 137355,
+     "odds": -105,
+     "side": "under",
+     "tickets": 54
+    }
+   ]
   }
  ],
  "version": 1
