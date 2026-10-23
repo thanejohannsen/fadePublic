@@ -6047,9 +6047,9 @@
   },
   {
    "away": "NE",
-   "away_points": null,
+   "away_points": 24,
    "home": "CHI",
-   "home_points": null,
+   "home_points": 30,
    "is_final": 0,
    "kickoff_utc": "2026-10-23T00:15:00+00:00",
    "observed_at": "2026-10-22T21:34:08+00:00",
