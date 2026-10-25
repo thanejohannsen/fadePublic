@@ -6307,9 +6307,9 @@
   },
   {
    "away": "IND",
-   "away_points": null,
+   "away_points": 10,
    "home": "MIN",
-   "home_points": null,
+   "home_points": 16,
    "is_final": 0,
    "kickoff_utc": "2026-10-25T17:00:00+00:00",
    "observed_at": "2026-10-25T16:15:27+00:00",
@@ -6567,9 +6567,9 @@
   },
   {
    "away": "TB",
-   "away_points": null,
+   "away_points": 43,
    "home": "CAR",
-   "home_points": null,
+   "home_points": 13,
    "is_final": 0,
    "kickoff_utc": "2026-10-25T17:00:00+00:00",
    "observed_at": "2026-10-25T16:15:27+00:00",
