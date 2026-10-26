@@ -9,7 +9,7 @@ from datetime import UTC, datetime, timedelta
 
 from .config import load_config
 from .db import open_db
-from .fades import find_fades
+from .fades import find_fades, summarise_slate
 from .record import load_log, save_log, settle, tally
 from .render import render_page
 from .splits import fetch_splits, store_results, store_splits
@@ -25,6 +25,7 @@ def cmd_refresh(args: argparse.Namespace) -> int:
     with open_db(cfg.db) as conn:
         fades: list = []
         watch: list = []
+        slate = None
         games = fetch_splits()
         if games:
             store_splits(conn, games, now)
@@ -41,6 +42,9 @@ def cmd_refresh(args: argparse.Namespace) -> int:
             counted = cfg.counted()
             fades = [f for f in qualifying if f.public.tickets >= counted[f.market]]
             watch = [f for f in qualifying if f.public.tickets < counted[f.market]]
+            # Why the board is empty, for the runs where it is. Built even when
+            # it is not: cheap, and it keeps the two code paths the same shape.
+            slate = summarise_slate(games, cfg.counted(), now, cfg.markets)
         else:
             # The feed is undocumented and not ours. An outage should empty the
             # board for one run, not take the record down with it.
@@ -82,6 +86,7 @@ def cmd_refresh(args: argparse.Namespace) -> int:
             watch_threshold=cfg.watched(),
             lock_lead=timedelta(hours=cfg.lock_lead_hours),
             max_staleness=timedelta(hours=cfg.max_staleness_hours),
+            slate=slate,
         ),
         encoding="utf-8",
     )

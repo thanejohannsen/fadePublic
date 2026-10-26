@@ -323,3 +323,80 @@ def test_the_settled_log_names_both_teams():
     page = render_page([], settled=[_settled(tickets=86)])
 
     assert "public under 47.5 86%" in page, "named side, its line, its share"
+
+
+# ------------------------------------------- an empty board that proves it is alive
+
+
+def _slate(total=14, finished=13, best_tickets=57, kickoff=KICKOFF, cut=70):
+    from fadepublic.fades import Slate
+
+    best = (
+        _fade(side="home", tickets=best_tickets, money=55, line=-4.5, market="spread")
+        if best_tickets is not None
+        else None
+    )
+    return Slate(
+        total=total, finished=finished, next_kickoff=kickoff, best=best,
+        best_cut=cut if best is not None else None,
+    )
+
+
+def test_an_empty_board_says_why_it_is_empty():
+    """An empty board under a timestamp from last night is indistinguishable from
+    a job that died three days ago -- and this project shipped the second thing
+    once already. Every figure here moves while the feed is healthy."""
+    html = render_page([], slate=_slate())
+
+    assert "13 of 14 games have finished" in html
+    assert "57% of tickets" in html
+    assert "13 short of the 70% cut" in html, "distance to the cut, not just the number"
+
+
+def test_the_empty_board_note_carries_an_absolute_kickoff_for_the_script():
+    """A server-rendered countdown would differ on every run and churn a commit
+    each time -- the exact noise the publish guard exists to prevent."""
+    html = render_page([], slate=_slate())
+
+    assert f'data-kickoff="{KICKOFF.isoformat()}"' in html
+    assert "Sun 17:00" in html, "and the no-JavaScript fallback is the absolute time"
+
+
+def test_a_finished_slate_says_so_rather_than_counting():
+    html = render_page([], slate=_slate(total=14, finished=14))
+
+    assert "All 14 games" in html and "not posted yet" in html
+    assert "13 of 14" not in html
+
+
+def test_no_slate_renders_no_note_and_does_not_crash():
+    """cli leaves it None when the fetch returned nothing, which is precisely the
+    run where the page must still render."""
+    assert "games have finished" not in render_page([], slate=None)
+    assert "games have finished" not in render_page([], slate=_slate(total=0, finished=0))
+
+
+def test_the_note_belongs_to_the_empty_state_only():
+    """With rows on the board the reader can see for themselves that it is live."""
+    assert "games have finished" not in render_page([_fade()], slate=_slate())
+
+
+def test_a_changed_slate_note_survives_the_publish_guard():
+    """The point of the whole feature.
+
+    The workflow only commits when some changed line does *not* carry
+    class="stamp", taking that to mean the timestamp alone moved. If the note
+    landed on the stamp's line the page would compute a fresh explanation every
+    run and publish none of them -- alive, and still looking dead.
+    """
+    when = datetime(2026, 10, 26, 3, 0, tzinfo=UTC)
+    before = render_page([], slate=_slate(best_tickets=57), generated_at=when)
+    after = render_page([], slate=_slate(best_tickets=61), generated_at=when)
+    assert before != after
+
+    changed = [
+        line
+        for line in set(before.splitlines()) ^ set(after.splitlines())
+        if 'class="stamp"' not in line
+    ]
+    assert changed, "a moved ticket share must look like a real change to the guard"

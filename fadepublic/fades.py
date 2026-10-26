@@ -201,3 +201,68 @@ def find_fades(
             f.game,
         ),
     )
+
+
+@dataclass(frozen=True)
+class Slate:
+    """What the feed is showing, for a page that has to prove it is alive.
+
+    An empty board beside a timestamp from last night is indistinguishable from a
+    job that died three days ago -- and this project has already shipped the
+    second thing once, when the record silently vanished and the page reported it
+    perfectly calmly. The board being empty is usually just Monday: the slate has
+    been played and the next one has not been posted.
+
+    So the empty state carries its own evidence. How much of the slate is already
+    finished, when the next game that could still qualify kicks off, and how far
+    its most lopsided side is from the cut. All three move when the feed is
+    working and freeze when it is not.
+    """
+
+    total: int
+    finished: int
+    next_kickoff: datetime | None
+    best: Fade | None
+    best_cut: int | None
+
+    @property
+    def all_played(self) -> bool:
+        return self.total > 0 and self.finished == self.total
+
+    @property
+    def shortfall(self) -> int | None:
+        """Points of ticket share the leader still needs to reach its cut."""
+        if self.best is None or self.best_cut is None:
+            return None
+        return max(0, self.best_cut - self.best.public.tickets)
+
+
+def summarise_slate(
+    games: list[GameSplits],
+    threshold: Threshold = DEFAULT_THRESHOLD,
+    now: datetime | None = None,
+    markets: tuple[str, ...] = FADEABLE_MARKETS,
+) -> Slate:
+    """Describe the slate behind an empty board.
+
+    The leader is found by running ``find_fades`` at a threshold of zero rather
+    than by a second scan: that inherits the rule's own handling of started games
+    and its labelling, so the message cannot describe a game the board would have
+    excluded, or name a side differently from how the board would have named it.
+    """
+    now = now or datetime.now(UTC)
+    still_open = find_fades(games, threshold=0, now=now, markets=markets)
+    best = max(still_open, key=lambda f: f.public.tickets, default=None)
+    cuts = limits(threshold, markets)
+    kickoffs = [
+        g.kickoff_utc
+        for g in games
+        if not g.started and g.kickoff_utc is not None and g.kickoff_utc > now
+    ]
+    return Slate(
+        total=len(games),
+        finished=sum(1 for g in games if g.started),
+        next_kickoff=min(kickoffs, default=None),
+        best=best,
+        best_cut=cuts.get(best.market) if best else None,
+    )

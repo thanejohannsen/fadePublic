@@ -349,8 +349,50 @@ def _watch_panel(watch, watch_threshold=70, threshold=80) -> str:
     )
 
 
+def _slate_note(slate) -> str:
+    """Why the board is empty, in a form that changes when the feed is working.
+
+    An empty board under a timestamp from last night reads as a broken job. Every
+    figure here moves run to run while the feed is healthy and freezes when it is
+    not, so the reader can tell "nothing qualifies" from "nothing is happening"
+    without opening the Actions tab.
+
+    The kickoff is absolute in the markup and rewritten to a countdown by the
+    script, same as every other time on the page: a server-rendered countdown
+    would differ on every run and churn a commit each time.
+    """
+    if slate is None or not slate.total:
+        return ""
+
+    bits = []
+    if slate.all_played:
+        bits.append(
+            f"All {slate.total} games on the board have finished, and the next "
+            f"slate is not posted yet."
+        )
+    elif slate.finished:
+        bits.append(f"{slate.finished} of {slate.total} games have finished.")
+
+    if slate.next_kickoff is not None:
+        bits.append(
+            f'Next kickoff <span data-kickoff="{slate.next_kickoff.isoformat()}">'
+            f"{_esc(f'{slate.next_kickoff:%a %H:%M}')}</span>."
+        )
+
+    best = slate.best
+    if best is not None and slate.best_cut is not None:
+        short = slate.shortfall
+        bits.append(
+            f"The most lopsided side still open is {_esc(best.game)}, "
+            f"<b>{_esc(best.public_label)}</b> at {best.public.tickets}% of "
+            f"tickets{f', {short} short of the {slate.best_cut}% cut' if short else ''}."
+        )
+
+    return f'<p class="note">{" ".join(bits)}</p>' if bits else ""
+
+
 def render_board(
-    fades, threshold=80, settled=None, lock_lead=None, max_staleness=None
+    fades, threshold=80, settled=None, lock_lead=None, max_staleness=None, slate=None
 ) -> str:
     """Games where the tickets are lopsided enough for the rule to fire.
 
@@ -369,6 +411,7 @@ def render_board(
             f'<div class="panel">{strip}'
             f'<p>No spread or total is currently carrying enough of '
             f"the tickets on one side.</p>"
+            f"{_slate_note(slate)}"
             f'<p class="note">The board fills as kickoff approaches, so this is '
             f"usually empty early in the week; anything close but short of "
             f"the cut shows under Watching below.</p></div>"
@@ -407,6 +450,7 @@ def render_page(
     watch_threshold=70,
     lock_lead=None,
     max_staleness=None,
+    slate=None,
 ) -> str:
     """The whole document.
 
@@ -437,7 +481,7 @@ def render_page(
 <div class="wrap">
   <h1>Fade the public</h1>
   <p class="stamp">Updated {stamp}</p>
-  {render_board(fades, threshold=threshold, settled=settled, lock_lead=lock_lead, max_staleness=max_staleness)}
+  {render_board(fades, threshold, settled, lock_lead, max_staleness, slate)}
   {_watch_panel(watch or [], watch_threshold, threshold)}
   {_settled_panel(list(settled or []))}
 </div>

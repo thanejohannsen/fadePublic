@@ -295,3 +295,72 @@ def test_a_plain_number_still_applies_to_every_market():
         side("total", "under", 15, money=20, line=47.5),
     ])
     assert len(find_fades([g], threshold=80, now=NOW)) == 2
+
+
+# ------------------------------------------------- describing an empty board
+
+
+def test_the_slate_summary_counts_what_has_been_played():
+    from fadepublic.fades import summarise_slate
+
+    played = game(
+        [side("spread", "home", 88, money=70, line=-3.5),
+         side("spread", "away", 12, money=30, line=3.5)],
+        status="complete", away="DONE", home="GAME",
+    )
+    upcoming = game([
+        side("spread", "home", 57, money=55, line=-4.5),
+        side("spread", "away", 43, money=45, line=4.5),
+    ])
+    s = summarise_slate([played, upcoming], threshold={"spread": 70}, now=NOW)
+
+    assert (s.total, s.finished) == (2, 1)
+    assert s.next_kickoff == LATER
+
+
+def test_the_leader_is_drawn_only_from_games_you_can_still_bet():
+    """It reuses find_fades rather than scanning again, so a finished game cannot
+    be named as the most lopsided side still open -- the 88% above is exactly the
+    row that would win such a scan."""
+    from fadepublic.fades import summarise_slate
+
+    played = game(
+        [side("spread", "home", 88, money=70, line=-3.5),
+         side("spread", "away", 12, money=30, line=3.5)],
+        status="complete", away="DONE", home="GAME",
+    )
+    upcoming = game([
+        side("spread", "home", 57, money=55, line=-4.5),
+        side("spread", "away", 43, money=45, line=4.5),
+    ])
+    s = summarise_slate([played, upcoming], threshold={"spread": 70}, now=NOW)
+
+    assert s.best is not None and s.best.public.tickets == 57
+    assert s.best.game == "AAA @ BBB", "the upcoming game, not the finished one"
+    assert s.best_cut == 70 and s.shortfall == 13
+
+
+def test_a_fully_played_slate_reports_itself_as_such():
+    from fadepublic.fades import summarise_slate
+
+    played = game(
+        [side("spread", "home", 88, money=70, line=-3.5),
+         side("spread", "away", 12, money=30, line=3.5)],
+        status="complete",
+    )
+    s = summarise_slate([played], threshold={"spread": 70}, now=NOW)
+
+    assert s.all_played and s.best is None and s.next_kickoff is None
+    assert s.shortfall is None, "nothing open means nothing to be short of"
+
+
+def test_a_leader_already_past_its_cut_is_short_by_nothing():
+    """Possible between the fetch and the render on a live slate; the message must
+    not print 'short by -4'."""
+    from fadepublic.fades import summarise_slate
+
+    g = game([
+        side("spread", "home", 74, money=70, line=-3.5),
+        side("spread", "away", 26, money=30, line=3.5),
+    ])
+    assert summarise_slate([g], threshold={"spread": 70}, now=NOW).shortfall == 0
