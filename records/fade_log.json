@@ -6827,9 +6827,9 @@
   },
   {
    "away": "KC",
-   "away_points": null,
+   "away_points": 3,
    "home": "SEA",
-   "home_points": null,
+   "home_points": 20,
    "is_final": 0,
    "kickoff_utc": "2026-10-26T00:20:00+00:00",
    "observed_at": "2026-10-25T22:32:06+00:00",
