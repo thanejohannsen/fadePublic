@@ -6957,9 +6957,9 @@
   },
   {
    "away": "CAR",
-   "away_points": null,
+   "away_points": 19,
    "home": "GB",
-   "home_points": null,
+   "home_points": 27,
    "is_final": 0,
    "kickoff_utc": "2026-10-30T00:15:00+00:00",
    "observed_at": "2026-10-29T23:56:31+00:00",
