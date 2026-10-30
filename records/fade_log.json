@@ -6954,6 +6954,71 @@
      "tickets": 39
     }
    ]
+  },
+  {
+   "away": "CAR",
+   "away_points": null,
+   "home": "GB",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-10-30T00:15:00+00:00",
+   "observed_at": "2026-10-29T23:56:31+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 27,
+     "num_bets": 179517,
+     "odds": 160,
+     "side": "away",
+     "tickets": 19
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 73,
+     "num_bets": 179517,
+     "odds": -198,
+     "side": "home",
+     "tickets": 81
+    },
+    {
+     "line": 3.5,
+     "market": "spread",
+     "money": 61,
+     "num_bets": 179517,
+     "odds": -110,
+     "side": "away",
+     "tickets": 51
+    },
+    {
+     "line": -3.5,
+     "market": "spread",
+     "money": 39,
+     "num_bets": 179517,
+     "odds": -110,
+     "side": "home",
+     "tickets": 49
+    },
+    {
+     "line": 47.5,
+     "market": "total",
+     "money": 73,
+     "num_bets": 179517,
+     "odds": -106,
+     "side": "over",
+     "tickets": 66
+    },
+    {
+     "line": 47.5,
+     "market": "total",
+     "money": 27,
+     "num_bets": 179517,
+     "odds": -112,
+     "side": "under",
+     "tickets": 34
+    }
+   ]
   }
  ],
  "version": 1
