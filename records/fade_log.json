@@ -7542,9 +7542,9 @@
   },
   {
    "away": "LAC",
-   "away_points": null,
+   "away_points": 9,
    "home": "LA",
-   "home_points": null,
+   "home_points": 24,
    "is_final": 0,
    "kickoff_utc": "2026-11-01T21:05:00+00:00",
    "observed_at": "2026-11-01T20:50:40+00:00",
