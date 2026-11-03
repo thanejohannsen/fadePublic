@@ -7802,9 +7802,9 @@
   },
   {
    "away": "CHI",
-   "away_points": null,
+   "away_points": 34,
    "home": "SEA",
-   "home_points": null,
+   "home_points": 17,
    "is_final": 0,
    "kickoff_utc": "2026-11-03T01:15:00+00:00",
    "observed_at": "2026-11-02T23:29:13+00:00",
