@@ -7799,6 +7799,71 @@
      "tickets": 37
     }
    ]
+  },
+  {
+   "away": "CHI",
+   "away_points": null,
+   "home": "SEA",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-11-03T01:15:00+00:00",
+   "observed_at": "2026-11-02T23:29:13+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 26,
+     "num_bets": 122855,
+     "odds": 149,
+     "side": "away",
+     "tickets": 24
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 74,
+     "num_bets": 122855,
+     "odds": -178,
+     "side": "home",
+     "tickets": 76
+    },
+    {
+     "line": 3.5,
+     "market": "spread",
+     "money": 64,
+     "num_bets": 122855,
+     "odds": -119,
+     "side": "away",
+     "tickets": 57
+    },
+    {
+     "line": -3.5,
+     "market": "spread",
+     "money": 36,
+     "num_bets": 122855,
+     "odds": -102,
+     "side": "home",
+     "tickets": 43
+    },
+    {
+     "line": 46.5,
+     "market": "total",
+     "money": 57,
+     "num_bets": 122855,
+     "odds": -110,
+     "side": "over",
+     "tickets": 47
+    },
+    {
+     "line": 46.5,
+     "market": "total",
+     "money": 43,
+     "num_bets": 122855,
+     "odds": -110,
+     "side": "under",
+     "tickets": 53
+    }
+   ]
   }
  ],
  "version": 1
