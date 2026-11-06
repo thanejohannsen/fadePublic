@@ -7867,9 +7867,9 @@
   },
   {
    "away": "JAC",
-   "away_points": null,
+   "away_points": 33,
    "home": "BAL",
-   "home_points": null,
+   "home_points": 10,
    "is_final": 0,
    "kickoff_utc": "2026-11-06T01:15:00+00:00",
    "observed_at": "2026-11-05T23:37:36+00:00",
