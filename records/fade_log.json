@@ -8452,9 +8452,9 @@
   },
   {
    "away": "HOU",
-   "away_points": null,
+   "away_points": 44,
    "home": "LAC",
-   "home_points": null,
+   "home_points": 22,
    "is_final": 0,
    "kickoff_utc": "2026-11-08T21:05:00+00:00",
    "observed_at": "2026-11-08T20:44:28+00:00",
@@ -8517,9 +8517,9 @@
   },
   {
    "away": "ARI",
-   "away_points": null,
+   "away_points": 3,
    "home": "SEA",
-   "home_points": null,
+   "home_points": 17,
    "is_final": 0,
    "kickoff_utc": "2026-11-08T21:25:00+00:00",
    "observed_at": "2026-11-08T20:44:28+00:00",
@@ -8582,9 +8582,9 @@
   },
   {
    "away": "GB",
-   "away_points": null,
+   "away_points": 45,
    "home": "NE",
-   "home_points": null,
+   "home_points": 27,
    "is_final": 0,
    "kickoff_utc": "2026-11-08T21:25:00+00:00",
    "observed_at": "2026-11-08T20:44:28+00:00",
@@ -8647,9 +8647,9 @@
   },
   {
    "away": "LV",
-   "away_points": null,
+   "away_points": 17,
    "home": "SF",
-   "home_points": null,
+   "home_points": 38,
    "is_final": 0,
    "kickoff_utc": "2026-11-08T21:25:00+00:00",
    "observed_at": "2026-11-08T20:44:28+00:00",
@@ -8707,6 +8707,71 @@
      "odds": -111,
      "side": "under",
      "tickets": 26
+    }
+   ]
+  },
+  {
+   "away": "TB",
+   "away_points": null,
+   "home": "CHI",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-11-09T01:20:00+00:00",
+   "observed_at": "2026-11-09T00:05:24+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 11,
+     "num_bets": 83207,
+     "odds": 225,
+     "side": "away",
+     "tickets": 6
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 89,
+     "num_bets": 83207,
+     "odds": -275,
+     "side": "home",
+     "tickets": 94
+    },
+    {
+     "line": 6.0,
+     "market": "spread",
+     "money": 27,
+     "num_bets": 83207,
+     "odds": -109,
+     "side": "away",
+     "tickets": 30
+    },
+    {
+     "line": -6.0,
+     "market": "spread",
+     "money": 73,
+     "num_bets": 83207,
+     "odds": -110,
+     "side": "home",
+     "tickets": 70
+    },
+    {
+     "line": 47.5,
+     "market": "total",
+     "money": 67,
+     "num_bets": 83207,
+     "odds": -108,
+     "side": "over",
+     "tickets": 67
+    },
+    {
+     "line": 47.5,
+     "market": "total",
+     "money": 33,
+     "num_bets": 83207,
+     "odds": -111,
+     "side": "under",
+     "tickets": 33
     }
    ]
   }
