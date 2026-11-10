@@ -8777,9 +8777,9 @@
   },
   {
    "away": "BUF",
-   "away_points": null,
+   "away_points": 23,
    "home": "MIN",
-   "home_points": null,
+   "home_points": 6,
    "is_final": 0,
    "kickoff_utc": "2026-11-10T01:15:00+00:00",
    "observed_at": "2026-11-09T20:42:34+00:00",
