@@ -8839,6 +8839,71 @@
      "tickets": 33
     }
    ]
+  },
+  {
+   "away": "WAS",
+   "away_points": null,
+   "home": "NYG",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-11-13T01:15:00+00:00",
+   "observed_at": "2026-11-13T01:03:45+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 50,
+     "num_bets": 156504,
+     "odds": 101,
+     "side": "away",
+     "tickets": 24
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 50,
+     "num_bets": 156504,
+     "odds": -121,
+     "side": "home",
+     "tickets": 76
+    },
+    {
+     "line": 1.5,
+     "market": "spread",
+     "money": 64,
+     "num_bets": 156504,
+     "odds": -111,
+     "side": "away",
+     "tickets": 44
+    },
+    {
+     "line": -1.5,
+     "market": "spread",
+     "money": 36,
+     "num_bets": 156504,
+     "odds": -109,
+     "side": "home",
+     "tickets": 56
+    },
+    {
+     "line": 40.5,
+     "market": "total",
+     "money": 50,
+     "num_bets": 156504,
+     "odds": -115,
+     "side": "over",
+     "tickets": 58
+    },
+    {
+     "line": 40.5,
+     "market": "total",
+     "money": 50,
+     "num_bets": 156504,
+     "odds": -108,
+     "side": "under",
+     "tickets": 42
+    }
+   ]
   }
  ],
  "version": 1
