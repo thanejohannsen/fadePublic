@@ -9684,6 +9684,71 @@
      "tickets": 30
     }
    ]
+  },
+  {
+   "away": "LAC",
+   "away_points": null,
+   "home": "BAL",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-11-17T01:15:00+00:00",
+   "observed_at": "2026-11-16T18:30:59+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 39,
+     "num_bets": 40616,
+     "odds": 189,
+     "side": "away",
+     "tickets": 17
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 61,
+     "num_bets": 40616,
+     "odds": -230,
+     "side": "home",
+     "tickets": 83
+    },
+    {
+     "line": 4.5,
+     "market": "spread",
+     "money": 33,
+     "num_bets": 40616,
+     "odds": -110,
+     "side": "away",
+     "tickets": 54
+    },
+    {
+     "line": -4.5,
+     "market": "spread",
+     "money": 67,
+     "num_bets": 40616,
+     "odds": -110,
+     "side": "home",
+     "tickets": 46
+    },
+    {
+     "line": 39.5,
+     "market": "total",
+     "money": 73,
+     "num_bets": 40616,
+     "odds": -107,
+     "side": "over",
+     "tickets": 73
+    },
+    {
+     "line": 39.5,
+     "market": "total",
+     "money": 27,
+     "num_bets": 40616,
+     "odds": -112,
+     "side": "under",
+     "tickets": 27
+    }
+   ]
   }
  ],
  "version": 1
