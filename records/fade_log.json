@@ -9687,9 +9687,9 @@
   },
   {
    "away": "LAC",
-   "away_points": null,
+   "away_points": 23,
    "home": "BAL",
-   "home_points": null,
+   "home_points": 20,
    "is_final": 0,
    "kickoff_utc": "2026-11-17T01:15:00+00:00",
    "observed_at": "2026-11-16T18:30:59+00:00",
