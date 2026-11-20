@@ -9752,9 +9752,9 @@
   },
   {
    "away": "IND",
-   "away_points": null,
+   "away_points": 3,
    "home": "HOU",
-   "home_points": null,
+   "home_points": 26,
    "is_final": 0,
    "kickoff_utc": "2026-11-20T01:15:00+00:00",
    "observed_at": "2026-11-19T20:33:24+00:00",
