@@ -10594,6 +10594,71 @@
      "tickets": 36
     }
    ]
+  },
+  {
+   "away": "GB",
+   "away_points": 13,
+   "home": "LA",
+   "home_points": 26,
+   "is_final": 0,
+   "kickoff_utc": "2026-11-26T01:00:00+00:00",
+   "observed_at": "2026-11-26T00:18:48+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 44,
+     "num_bets": 123708,
+     "odds": 120,
+     "side": "away",
+     "tickets": 33
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 56,
+     "num_bets": 123708,
+     "odds": -145,
+     "side": "home",
+     "tickets": 67
+    },
+    {
+     "line": 2.5,
+     "market": "spread",
+     "money": 47,
+     "num_bets": 123708,
+     "odds": -104,
+     "side": "away",
+     "tickets": 50
+    },
+    {
+     "line": -2.5,
+     "market": "spread",
+     "money": 53,
+     "num_bets": 123708,
+     "odds": -114,
+     "side": "home",
+     "tickets": 50
+    },
+    {
+     "line": 43.5,
+     "market": "total",
+     "money": 5,
+     "num_bets": 123708,
+     "odds": -105,
+     "side": "over",
+     "tickets": 9
+    },
+    {
+     "line": 43.5,
+     "market": "total",
+     "money": 95,
+     "num_bets": 123708,
+     "odds": -112,
+     "side": "under",
+     "tickets": 91
+    }
+   ]
   }
  ],
  "version": 1
