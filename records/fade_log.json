@@ -10854,6 +10854,71 @@
      "tickets": 67
     }
    ]
+  },
+  {
+   "away": "DEN",
+   "away_points": null,
+   "home": "PIT",
+   "home_points": null,
+   "is_final": 0,
+   "kickoff_utc": "2026-11-27T20:00:00+00:00",
+   "observed_at": "2026-11-27T13:52:31+00:00",
+   "sides": [
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 89,
+     "num_bets": 41783,
+     "odds": -235,
+     "side": "away",
+     "tickets": 90
+    },
+    {
+     "line": 0.0,
+     "market": "moneyline",
+     "money": 11,
+     "num_bets": 41783,
+     "odds": 190,
+     "side": "home",
+     "tickets": 10
+    },
+    {
+     "line": -4.5,
+     "market": "spread",
+     "money": 76,
+     "num_bets": 41783,
+     "odds": -111,
+     "side": "away",
+     "tickets": 83
+    },
+    {
+     "line": 4.5,
+     "market": "spread",
+     "money": 24,
+     "num_bets": 41783,
+     "odds": -108,
+     "side": "home",
+     "tickets": 17
+    },
+    {
+     "line": 37.0,
+     "market": "total",
+     "money": 70,
+     "num_bets": 41783,
+     "odds": -108,
+     "side": "over",
+     "tickets": 75
+    },
+    {
+     "line": 37.0,
+     "market": "total",
+     "money": 30,
+     "num_bets": 41783,
+     "odds": -110,
+     "side": "under",
+     "tickets": 25
+    }
+   ]
   }
  ],
  "version": 1
