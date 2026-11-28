@@ -10857,9 +10857,9 @@
   },
   {
    "away": "DEN",
-   "away_points": null,
+   "away_points": 5,
    "home": "PIT",
-   "home_points": null,
+   "home_points": 27,
    "is_final": 0,
    "kickoff_utc": "2026-11-27T20:00:00+00:00",
    "observed_at": "2026-11-27T13:52:31+00:00",
